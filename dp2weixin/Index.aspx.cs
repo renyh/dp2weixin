@@ -12,7 +12,7 @@ namespace dp2weixin
 {
     public partial class Index : System.Web.UI.Page
     {
-        //与微信公众账号后台的Token设置保持一致，区分大小写。123
+        //与微信公众账号后台的Token设置保持一致，区分大小写。123444
         private readonly string Token = "dp2weixin";
         
         protected void Page_Load(object sender, EventArgs e)
