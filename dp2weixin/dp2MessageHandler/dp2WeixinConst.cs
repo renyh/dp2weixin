@@ -14,5 +14,7 @@ namespace dp2weixin
         public const string ACTION_Renew = "renew";
         public const string ACTION_Search = "search";
         public const string ACTION_SearchDetail = "search-detail";
+
+        public const int C_VIEW_COUNT = 50;
     }
 }

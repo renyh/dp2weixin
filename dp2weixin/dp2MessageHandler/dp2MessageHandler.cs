@@ -172,10 +172,7 @@ namespace dp2weixin
                     return this.ReplyMyMessage(requestMessage.FromUserName);
                 }
                 else
-                {
-                    
-
-
+                {   
                     return this.ReplyCommonTextMessage(requestMessage);
                 }
             }
@@ -277,7 +274,8 @@ namespace dp2weixin
                         }
                     }
 
-                    int nViewCount = 50;
+
+
                     int nRealTotalCount = this.CurrentMessageContext.BiblioResultPathList.Count;
                     if (ltotoalCount != nRealTotalCount)
                     {
@@ -285,6 +283,8 @@ namespace dp2weixin
                         return responseMessage;
                     }
 
+                    // 一页显示的记录数
+                    int nViewCount = dp2WeiXinConst.C_VIEW_COUNT;
                     if (nViewCount > nRealTotalCount)
                         nViewCount = nRealTotalCount;
 
@@ -302,7 +302,7 @@ namespace dp2weixin
                     }
 
                     //返回结果
-                    string strMessage = "命中'" + ltotoalCount + "'条书目记录。您输入序列查看详细信息。\r\n";
+                    string strMessage = "命中'" + ltotoalCount + "'条书目记录。您可以回复序列查看详细信息。\r\n";
                     if (nViewCount < nRealTotalCount)
                     {
                         this.CurrentMessageContext.IsCanNextBrowse = true;
@@ -334,16 +334,17 @@ namespace dp2weixin
             long nRealTotalCount = this.CurrentMessageContext.BiblioResultPathList.Count;
             if (this.CurrentMessageContext.ResultNextStart >= nRealTotalCount)
             {
-                responseMessage.Content = "内部错误，不可能走到这里GetNextBrowse()";
+                responseMessage.Content = "内部错误，下页起始序号>=总记录数了";
                 return responseMessage;
             }
 
-            long nMaxIndex = this.CurrentMessageContext.ResultNextStart + 50;
+            // 本地显示的范围
+            long nMaxIndex = this.CurrentMessageContext.ResultNextStart + dp2WeiXinConst.C_VIEW_COUNT;
             if (nMaxIndex > nRealTotalCount)
             {
                 nMaxIndex = nRealTotalCount;
 
-                // 没有下次的
+                // 没有下页了
                 this.CurrentMessageContext.IsCanNextBrowse = false;
             }
 
@@ -364,7 +365,19 @@ namespace dp2weixin
             this.CurrentMessageContext.ResultNextStart = nMaxIndex;
 
             //返回结果
+            /*
+            string strMessage = "命中'" + nRealTotalCount + "'条书目记录。您可以回复序列查看详细信息。\r\n";
+            if (nMaxIndex < nRealTotalCount)
+            {
+                this.CurrentMessageContext.IsCanNextBrowse = true;
+                //this.CurrentMessageContext.ResultNextStart = nMaxIndex;
+                strMessage = "命中'" + nRealTotalCount + "'条书目记录。本次显示1-" + nViewCount + "条，您可以回复N继续显示下一页，或者回复序列查看详细信息。\r\n";
+            }             
+            responseMessage.Content = strMessage + strBrowse;
+            */
+
             responseMessage.Content = strBrowse;
+
             return responseMessage;
         }
 
