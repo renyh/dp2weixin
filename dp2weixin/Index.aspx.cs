@@ -37,13 +37,16 @@ namespace dp2weixin
                 Response.End();
             }
             else
-            {                
+            {      
+                // 本地调试时，要把校验关掉
+                /*
                 //post method - 当有用户向公众账号发送消息时触发
                 if (!CheckSignature.Check(signature, timestamp, nonce, Token))
                 {
                     WriteContent("参数错误！");
                     return;
-                }                 
+                }
+                 */
                 var postModel = new PostModel()
                 {
                     Signature = Request.QueryString["signature"],
