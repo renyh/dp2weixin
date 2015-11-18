@@ -27,6 +27,8 @@ namespace dp2weixin
     /// </summary>
     public partial class dp2MessageHandler : MessageHandler<dp2MessageContext>
     {
+        public string ServerBaseUrl = "";
+
         /// <summary>
         /// 构造函数
         /// </summary>
@@ -171,7 +173,16 @@ namespace dp2weixin
                     this.CurrentMessageContext.CurrentAction = dp2WeiXinConst.ACTION_Renew;
                     return this.ReplyMyMessage(requestMessage.FromUserName);
                 }
-                else
+                //BookRecommend
+                else if (requestMessage.Content.ToLower() == dp2WeiXinConst.ACTION_BookRecommend)
+                {
+                    return this.ReplyNewBooks();
+                }
+                else if (requestMessage.Content.ToLower() == dp2WeiXinConst.ACTION_Notice)
+                {
+                    return this.ReplyNotice();
+                }
+                else 
                 {   
                     return this.ReplyCommonTextMessage(requestMessage);
                 }
@@ -1211,6 +1222,73 @@ namespace dp2weixin
         }
 
         #endregion
+
+
+        #region 新书推荐
+
+        /// <summary>
+        /// 图书推荐
+        /// </summary>
+        /// <returns></returns>
+        private IResponseMessageBase ReplyNewBooks()
+        {
+            string fileName = this.ServerBaseUrl + "/newbooks.xml";
+            if (File.Exists(fileName) == false)
+            {
+                var textResponseMessage = CreateResponseMessage<ResponseMessageText>();
+                textResponseMessage.Content = "当前没有推荐图书。";
+                return textResponseMessage;
+            }
+            var responseMessage = CreateResponseMessage<ResponseMessageNews>();
+            XmlDocument dom = new XmlDocument();
+            dom.Load(fileName);
+            XmlNodeList itemList = dom.DocumentElement.SelectNodes("item");
+            foreach (XmlNode node in itemList)
+            {
+                responseMessage.Articles.Add(new Article()
+                {
+                    Title = DomUtil.GetNodeText(node.SelectSingleNode("Title")),
+                    Description = DomUtil.GetNodeText(node.SelectSingleNode("Description")),
+                    PicUrl = Global.dp2WeiXinUrl + DomUtil.GetNodeText(node.SelectSingleNode("PicUrl")),
+                    Url = DomUtil.GetNodeText(node.SelectSingleNode("Url"))
+                });
+            }
+            return responseMessage;
+        }
+
+        /// <summary>
+        /// 近期通告
+        /// </summary>
+        /// <returns></returns>
+        private IResponseMessageBase ReplyNotice()
+        {
+            string fileName = this.ServerBaseUrl + "/notice.xml";
+            if (File.Exists(fileName) == false)
+            {
+                var textResponseMessage = CreateResponseMessage<ResponseMessageText>();
+                textResponseMessage.Content = "暂无通告";
+                return textResponseMessage;
+            }
+            var responseMessage = CreateResponseMessage<ResponseMessageNews>();
+            XmlDocument dom = new XmlDocument();
+            dom.Load(fileName);
+            XmlNodeList itemList = dom.DocumentElement.SelectNodes("item");
+            foreach (XmlNode node in itemList)
+            {
+                Article article = new Article();
+                article.Title = DomUtil.GetNodeText(node.SelectSingleNode("Title"));
+                article.Description = DomUtil.GetNodeText(node.SelectSingleNode("Description"));
+                string picUrl = DomUtil.GetNodeText(node.SelectSingleNode("PicUrl"));
+                if (String.IsNullOrEmpty(picUrl) == false)
+                    article.PicUrl = Global.dp2WeiXinUrl + picUrl;
+                article.Url = DomUtil.GetNodeText(node.SelectSingleNode("Url"));
+                responseMessage.Articles.Add(article);
+            }
+            return responseMessage;
+        }
+
+        #endregion
+
 
         #region 返回通用文本消息
         /// <summary>

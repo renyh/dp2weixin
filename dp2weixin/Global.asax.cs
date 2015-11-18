@@ -17,6 +17,10 @@ namespace dp2weixin
         public static string dp2UserName = "";//"weixin";
         public static string dp2Password = "";//"111111";
 
+        // dp2weixin url
+        public static string dp2WeiXinUrl = "http://dp2003.com/dp2weixin";
+
+
         // dp2通道池
         public static LibraryChannelPool ChannelPool = null;
 

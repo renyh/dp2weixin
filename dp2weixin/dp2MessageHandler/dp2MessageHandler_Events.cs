@@ -65,12 +65,14 @@ namespace dp2weixin
                             reponseMessage = WaitForSearchWordMessage();
                             break;
                         }
-                    case "BookRecommend":
-                    case "Notice":
+                    case dp2WeiXinConst.ACTION_BookRecommend://"BookRecommend":
                         {
-                            var textResponseMessage = CreateResponseMessage<ResponseMessageText>();
-                            textResponseMessage.Content = "您点击了" + requestMessage.EventKey + ",此功能正在开发中...";
-                            reponseMessage = textResponseMessage;
+                            reponseMessage = this.ReplyNewBooks();
+                            break;
+                        }
+                    case dp2WeiXinConst.ACTION_Notice:
+                        {
+                            reponseMessage = this.ReplyNotice();
                             break;
                         }
                     case dp2WeiXinConst.ACTION_Binding://"Binding":
@@ -122,6 +124,8 @@ namespace dp2weixin
                 return responseMessage;
             }
         }
+
+
         /// <summary>
         /// 扫描带参数二维码事件
         /// 实际上用户无法收到非订阅账号的消息，所以这里可以随便写。

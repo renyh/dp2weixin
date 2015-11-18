@@ -15,6 +15,10 @@ namespace dp2weixin
         public const string ACTION_Search = "search";
         public const string ACTION_SearchDetail = "search-detail";
 
+        // 图书消息
+        public const string ACTION_BookRecommend = "bookrecommend";
+        public const string ACTION_Notice = "notice";//Notice
+
         public const int C_VIEW_COUNT = 50;
     }
 }
