@@ -11,14 +11,14 @@ using Senparc.Weixin.MP.Helpers;
 using System.Xml;
 using DigitalPlatform.Xml;
 using System.Globalization;
-using dp2weixin.dp2RestfulApi;
+using dp2Command.Server.dp2RestfulApi;
 using Senparc.Weixin.Context;
 using Senparc.Weixin.MP.Entities.Request;
 using DigitalPlatform.IO;
 using System.Diagnostics;
 using DigitalPlatform;
 using DigitalPlatform.Text;
-using dp2weixin.Server;
+using dp2Command.Server;
 
 namespace dp2weixin
 {
@@ -30,14 +30,14 @@ namespace dp2weixin
     {
         public string ServerBaseUrl = "";
 
-        public dp2WeiXinServer WeiXinServer = null;
+        public dp2CommandServer WeiXinServer = null;
 
         /// <summary>
         /// 构造函数
         /// </summary>
         /// <param name="inputStream"></param>
         /// <param name="maxRecordCount"></param>
-        public dp2MessageHandler(dp2WeiXinServer weiXinServer,Stream inputStream, PostModel postModel, int maxRecordCount = 0)
+        public dp2MessageHandler(dp2CommandServer weiXinServer,Stream inputStream, PostModel postModel, int maxRecordCount = 0)
             : base(inputStream, postModel, maxRecordCount)
         {
             //这里设置仅用于测试，实际开发可以在外部更全局的地方设置，
@@ -84,17 +84,17 @@ namespace dp2weixin
                 this.CurrentMessageContext.IsCanNextBrowse = false;
 
                 // 判断是否是续借，输入的册条码
-                if (this.CurrentMessageContext.CurrentAction == dp2WeiXinConst.ACTION_Renew)
+                if (this.CurrentMessageContext.CurrentAction == dp2CommandUtility.C_Command_Renew)
                 {
                     return this.Renew(requestMessage.Content);
                 }
                 //判断是否是查询输入的检索词步骤
-                if (this.CurrentMessageContext.CurrentAction == dp2WeiXinConst.ACTION_Search)
+                if (this.CurrentMessageContext.CurrentAction == dp2CommandUtility.C_Command_Search)
                 {
                     return this.SearchBiblio(requestMessage.Content);
                 }
                 // 获取详细的书目信息
-                if (this.CurrentMessageContext.CurrentAction == dp2WeiXinConst.ACTION_SearchDetail)
+                if (this.CurrentMessageContext.CurrentAction == dp2CommandUtility.C_Command_SearchDetail)
                 {
                     return this.GetDetailBiblioInfo(requestMessage.Content);
                 }
@@ -150,40 +150,40 @@ namespace dp2weixin
                 // 把操作步骤清掉
                 this.CurrentMessageContext.CurrentAction = "";
 
-                if (requestMessage.Content.ToLower() == dp2WeiXinConst.ACTION_Search)
+                if (requestMessage.Content.ToLower() == dp2CommandUtility.C_Command_Search)
                 {
                     return this.WaitForSearchWordMessage();
                 }
-                else if (requestMessage.Content.ToLower() == dp2WeiXinConst.ACTION_Binding)
+                else if (requestMessage.Content.ToLower() == dp2CommandUtility.C_Command_Binding)
                 {
-                    this.CurrentMessageContext.CurrentAction = dp2WeiXinConst.ACTION_Binding;
+                    this.CurrentMessageContext.CurrentAction = dp2CommandUtility.C_Command_Binding;
                     return this.ReplyMyMessage(requestMessage.FromUserName);
                 }
-                else if (requestMessage.Content.ToLower() == dp2WeiXinConst.ACTION_Unbinding)
+                else if (requestMessage.Content.ToLower() == dp2CommandUtility.C_Command_Unbinding)
                 {
                     return this.ReplyUnbindingMessage(requestMessage.FromUserName);
                 }
-                else if (requestMessage.Content.ToLower() == dp2WeiXinConst.ACTION_MyInfo)
+                else if (requestMessage.Content.ToLower() == dp2CommandUtility.C_Command_MyInfo)
                 {
-                    this.CurrentMessageContext.CurrentAction = dp2WeiXinConst.ACTION_MyInfo;
+                    this.CurrentMessageContext.CurrentAction = dp2CommandUtility.C_Command_MyInfo;
                     return this.ReplyMyMessage(requestMessage.FromUserName);
                 }
-                else if (requestMessage.Content.ToLower() == dp2WeiXinConst.ACTION_BorrowInfo)
+                else if (requestMessage.Content.ToLower() == dp2CommandUtility.C_Command_BorrowInfo)
                 {
-                    this.CurrentMessageContext.CurrentAction = dp2WeiXinConst.ACTION_BorrowInfo;
+                    this.CurrentMessageContext.CurrentAction = dp2CommandUtility.C_Command_BorrowInfo;
                     return this.ReplyMyMessage(requestMessage.FromUserName);
                 }
-                else if (requestMessage.Content.ToLower() == dp2WeiXinConst.ACTION_Renew)
+                else if (requestMessage.Content.ToLower() == dp2CommandUtility.C_Command_Renew)
                 {
-                    this.CurrentMessageContext.CurrentAction = dp2WeiXinConst.ACTION_Renew;
+                    this.CurrentMessageContext.CurrentAction = dp2CommandUtility.C_Command_Renew;
                     return this.ReplyMyMessage(requestMessage.FromUserName);
                 }
                 //BookRecommend
-                else if (requestMessage.Content.ToLower() == dp2WeiXinConst.ACTION_BookRecommend)
+                else if (requestMessage.Content.ToLower() == dp2CommandUtility.C_Command_BookRecommend)
                 {
                     return this.ReplyNewBooks();
                 }
-                else if (requestMessage.Content.ToLower() == dp2WeiXinConst.ACTION_Notice)
+                else if (requestMessage.Content.ToLower() == dp2CommandUtility.C_Command_Notice)
                 {
                     return this.ReplyNotice();
                 }
@@ -210,7 +210,7 @@ namespace dp2weixin
         /// <returns></returns>
         private IResponseMessageBase WaitForSearchWordMessage()
         {
-            this.CurrentMessageContext.CurrentAction = dp2WeiXinConst.ACTION_Search;
+            this.CurrentMessageContext.CurrentAction = dp2CommandUtility.C_Command_Search;
             var responseMessage = CreateResponseMessage<ResponseMessageText>();
             responseMessage.Content = "请输入检索词";
             return responseMessage;
@@ -224,7 +224,7 @@ namespace dp2weixin
         private IResponseMessageBase SearchBiblio(string strWord)
         {
             // 先把检索状态清掉
-            this.CurrentMessageContext.CurrentAction = dp2WeiXinConst.ACTION_SearchDetail;
+            this.CurrentMessageContext.CurrentAction = dp2CommandUtility.C_Command_SearchDetail;
 
             var responseMessage = CreateResponseMessage<ResponseMessageText>();
 
@@ -329,14 +329,14 @@ namespace dp2weixin
             }
 
             // 本页显示的最大序号
-            long nMaxIndex = this.CurrentMessageContext.ResultNextStart + dp2WeiXinConst.C_VIEW_COUNT;
+            long nMaxIndex = this.CurrentMessageContext.ResultNextStart + dp2CommandUtility.C_ViewCount_OnePage;
             if (nMaxIndex > nRealTotalCount)
             {
                 nMaxIndex = nRealTotalCount;                
             }
 
             string strPreMessage = "";
-            if (nMaxIndex < dp2WeiXinConst.C_VIEW_COUNT
+            if (nMaxIndex < dp2CommandUtility.C_ViewCount_OnePage
                 || (this.CurrentMessageContext.ResultNextStart==0 && nMaxIndex== nRealTotalCount))
             {
                 // 没有下页了
@@ -390,7 +390,7 @@ namespace dp2weixin
         private IResponseMessageBase GetDetailBiblioInfo(string strIndex)
         {
             // 设置可以继续看其它书目详细信息
-            this.CurrentMessageContext.CurrentAction = dp2WeiXinConst.ACTION_SearchDetail;
+            this.CurrentMessageContext.CurrentAction = dp2CommandUtility.C_Command_SearchDetail;
             //设回可以next
             this.CurrentMessageContext.IsCanNextBrowse = true;
 
@@ -531,7 +531,7 @@ namespace dp2weixin
                         // 绑定成功，把读者证条码记下来，用于续借 2015/11/7
                         this.CurrentMessageContext.ReaderBarcode = strBarcode;
 
-                        if (this.CurrentMessageContext.CurrentAction == dp2WeiXinConst.ACTION_Binding)
+                        if (this.CurrentMessageContext.CurrentAction == dp2CommandUtility.C_Command_Binding)
                         {
                             this.CurrentMessageContext.CurrentAction="";
                             // 返回读者信息
@@ -717,15 +717,15 @@ namespace dp2weixin
             }
             else if (lRet == 1)
             {
-                if (this.CurrentMessageContext.CurrentAction == dp2WeiXinConst.ACTION_Binding)
+                if (this.CurrentMessageContext.CurrentAction == dp2CommandUtility.C_Command_Binding)
                 {
                     this.CurrentMessageContext.CurrentAction = "";
                     responseMessage.Content = "您已绑定读者账号。";
                     return responseMessage;
                 }
-                else if (this.CurrentMessageContext.CurrentAction == dp2WeiXinConst.ACTION_MyInfo
-                        || this.CurrentMessageContext.CurrentAction == dp2WeiXinConst.ACTION_BorrowInfo
-                        || this.CurrentMessageContext.CurrentAction == dp2WeiXinConst.ACTION_Renew)
+                else if (this.CurrentMessageContext.CurrentAction == dp2CommandUtility.C_Command_MyInfo
+                        || this.CurrentMessageContext.CurrentAction == dp2CommandUtility.C_Command_BorrowInfo
+                        || this.CurrentMessageContext.CurrentAction == dp2CommandUtility.C_Command_Renew)
                 {
                     LibraryChannel channel = this.WeiXinServer.ChannelPool.GetChannel(this.WeiXinServer.dp2Url, this.WeiXinServer.dp2UserName);
                     channel.Password = this.WeiXinServer.dp2Password;
@@ -781,21 +781,21 @@ namespace dp2weixin
         {
             XmlDocument dom = new XmlDocument();
             dom.LoadXml(strXml);
-            if (this.CurrentMessageContext.CurrentAction == dp2WeiXinConst.ACTION_MyInfo)
+            if (this.CurrentMessageContext.CurrentAction == dp2CommandUtility.C_Command_MyInfo)
             {
                 this.CurrentMessageContext.CurrentAction = "";
                 return this.GetReaderInfoMessage(dom);
             }
-            else if (this.CurrentMessageContext.CurrentAction == dp2WeiXinConst.ACTION_BorrowInfo)
+            else if (this.CurrentMessageContext.CurrentAction == dp2CommandUtility.C_Command_BorrowInfo)
             {
                 this.CurrentMessageContext.CurrentAction = "";
                 bool bHasBorrow = false;
                 return this.GetBorrowsMessage(dom, out bHasBorrow);
             }
-            else if (this.CurrentMessageContext.CurrentAction == dp2WeiXinConst.ACTION_Renew)
+            else if (this.CurrentMessageContext.CurrentAction == dp2CommandUtility.C_Command_Renew)
             {
                 // 这里需要把状态设为renew，后面继续输入条码续借
-                this.CurrentMessageContext.CurrentAction = dp2WeiXinConst.ACTION_Renew;
+                this.CurrentMessageContext.CurrentAction = dp2CommandUtility.C_Command_Renew;
 
 
                 bool bHasBorrow = false;

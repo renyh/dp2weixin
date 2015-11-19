@@ -8,12 +8,12 @@
     创建标识：Senparc - 20150312
 ----------------------------------------------------------------*/
 
+using Senparc.Weixin.Context;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Remoting.Messaging;
 using System.Text;
-using Senparc.Weixin.Context;
 using Senparc.Weixin.MP.Entities;
 
 namespace dp2weixin

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Runtime.Serialization;
 
-namespace dp2weixin.dp2RestfulApi
+namespace dp2Command.Server.dp2RestfulApi
 {
 
     #region dp2Kernel数据结构

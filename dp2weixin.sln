@@ -13,13 +13,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dp2weixin", "dp2weixin\dp2w
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DigitalPlatform.Text", "DigitalPlatform.Text\DigitalPlatform.Text.csproj", "{26F96CC3-A4A9-4BC4-A10A-BC7E25581FF6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dp2weixin.Server", "dp2weixin.Server\dp2weixin.Server.csproj", "{A77B8A4A-3AE8-4BD7-B09A-BF8D92FE802D}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dp2weixin.CookieWebClient", "dp2weixin.CookieWebClient\dp2weixin.CookieWebClient.csproj", "{ACDEF862-D0E2-4E19-A2CB-06866ABC9D5C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebWeiXinToGZH", "WebWeiXinToGZH\WebWeiXinToGZH.csproj", "{5F90CC4A-C68A-489F-8CE2-44CAF5B59B23}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "myConsole", "myConsole\myConsole.csproj", "{AA0ADD05-854B-43F9-8C57-9A8768C7A564}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dp2CommandConsole", "dp2CommandConsole\dp2CommandConsole.csproj", "{AA0ADD05-854B-43F9-8C57-9A8768C7A564}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dp2Command.Server", "dp2Command.Server\dp2Command.Server.csproj", "{A77B8A4A-3AE8-4BD7-B09A-BF8D92FE802D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -88,15 +88,6 @@ Global
 		{26F96CC3-A4A9-4BC4-A10A-BC7E25581FF6}.Test|Any CPU.Build.0 = Release|Any CPU
 		{26F96CC3-A4A9-4BC4-A10A-BC7E25581FF6}.Test|x86.ActiveCfg = Release|x86
 		{26F96CC3-A4A9-4BC4-A10A-BC7E25581FF6}.Test|x86.Build.0 = Release|x86
-		{A77B8A4A-3AE8-4BD7-B09A-BF8D92FE802D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A77B8A4A-3AE8-4BD7-B09A-BF8D92FE802D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A77B8A4A-3AE8-4BD7-B09A-BF8D92FE802D}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{A77B8A4A-3AE8-4BD7-B09A-BF8D92FE802D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A77B8A4A-3AE8-4BD7-B09A-BF8D92FE802D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A77B8A4A-3AE8-4BD7-B09A-BF8D92FE802D}.Release|x86.ActiveCfg = Release|Any CPU
-		{A77B8A4A-3AE8-4BD7-B09A-BF8D92FE802D}.Test|Any CPU.ActiveCfg = Release|Any CPU
-		{A77B8A4A-3AE8-4BD7-B09A-BF8D92FE802D}.Test|Any CPU.Build.0 = Release|Any CPU
-		{A77B8A4A-3AE8-4BD7-B09A-BF8D92FE802D}.Test|x86.ActiveCfg = Release|Any CPU
 		{ACDEF862-D0E2-4E19-A2CB-06866ABC9D5C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{ACDEF862-D0E2-4E19-A2CB-06866ABC9D5C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ACDEF862-D0E2-4E19-A2CB-06866ABC9D5C}.Debug|x86.ActiveCfg = Debug|Any CPU
@@ -124,6 +115,15 @@ Global
 		{AA0ADD05-854B-43F9-8C57-9A8768C7A564}.Test|Any CPU.ActiveCfg = Release|Any CPU
 		{AA0ADD05-854B-43F9-8C57-9A8768C7A564}.Test|Any CPU.Build.0 = Release|Any CPU
 		{AA0ADD05-854B-43F9-8C57-9A8768C7A564}.Test|x86.ActiveCfg = Release|Any CPU
+		{A77B8A4A-3AE8-4BD7-B09A-BF8D92FE802D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A77B8A4A-3AE8-4BD7-B09A-BF8D92FE802D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A77B8A4A-3AE8-4BD7-B09A-BF8D92FE802D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A77B8A4A-3AE8-4BD7-B09A-BF8D92FE802D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A77B8A4A-3AE8-4BD7-B09A-BF8D92FE802D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A77B8A4A-3AE8-4BD7-B09A-BF8D92FE802D}.Release|x86.ActiveCfg = Release|Any CPU
+		{A77B8A4A-3AE8-4BD7-B09A-BF8D92FE802D}.Test|Any CPU.ActiveCfg = Release|Any CPU
+		{A77B8A4A-3AE8-4BD7-B09A-BF8D92FE802D}.Test|Any CPU.Build.0 = Release|Any CPU
+		{A77B8A4A-3AE8-4BD7-B09A-BF8D92FE802D}.Test|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

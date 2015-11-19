@@ -4,9 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace dp2weixin.Server
+namespace dp2Command.Server
 {
-    public class Class1
+    public class BaseCommand
     {
+        public string CommandName { get;set;}
     }
 }

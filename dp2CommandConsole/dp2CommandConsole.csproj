@@ -7,8 +7,8 @@
     <ProjectGuid>{AA0ADD05-854B-43F9-8C57-9A8768C7A564}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>myConsole</RootNamespace>
-    <AssemblyName>myConsole</AssemblyName>
+    <RootNamespace>dp2CommandConsole</RootNamespace>
+    <AssemblyName>dp2CommandConsole</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -49,9 +49,17 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\DigitalPlatform.IO\DigitalPlatform.IO.csproj">
+      <Project>{441cb814-af78-4503-91ef-dce5f3269502}</Project>
+      <Name>DigitalPlatform.IO</Name>
+    </ProjectReference>
     <ProjectReference Include="..\DigitalPlatform.Text\DigitalPlatform.Text.csproj">
       <Project>{26f96cc3-a4a9-4bc4-a10a-bc7e25581ff6}</Project>
       <Name>DigitalPlatform.Text</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\dp2Command.Server\dp2Command.Server.csproj">
+      <Project>{a77b8a4a-3ae8-4bd7-b09a-bf8d92fe802d}</Project>
+      <Name>dp2Command.Server</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

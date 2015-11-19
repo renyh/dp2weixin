@@ -12,12 +12,9 @@ namespace dp2ConsoleToWeiXin
         {
             using (Instance instance = new Instance())
             {
-
                 while (true)
                 {
-
                     string line = Console.ReadLine();
-
                     if (instance.ProcessCommand(line) == true)
                         return;
                 }

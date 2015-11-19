@@ -15,11 +15,10 @@ using System.ServiceModel.Security.Tokens;
 using DigitalPlatform;
 using System.Runtime.Serialization.Json;
 using System.Web;
-using dp2weixin.dp2RestfulApi;
 using DigitalPlatform.Text;
 using dp2weixin.CookieWebClient;
 
-namespace dp2weixin.dp2RestfulApi
+namespace dp2Command.Server.dp2RestfulApi
 {
     /// <summary>
     /// 通讯通道

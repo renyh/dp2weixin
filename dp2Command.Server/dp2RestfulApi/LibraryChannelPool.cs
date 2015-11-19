@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 
-namespace dp2weixin.dp2RestfulApi
+namespace dp2Command.Server.dp2RestfulApi
 {
     /// <summary>
     /// 通道池
