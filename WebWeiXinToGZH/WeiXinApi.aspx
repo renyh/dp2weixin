@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="WeiXinApi.aspx.cs" Inherits="dp2WebToWeiXin.WeiXinApi" %>
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="WeiXinApi.aspx.cs" Inherits="WebWeiXinToGZH.WeiXinApi" %>
 
 <!DOCTYPE html>
 

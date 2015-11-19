@@ -7,8 +7,7 @@
 // </自动生成>
 //------------------------------------------------------------------------------
 
-namespace dp2WebToWeiXin
-{
+namespace WebWeiXinToGZH {
     
     
     public partial class WeiXinApi {

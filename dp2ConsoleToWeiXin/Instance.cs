@@ -15,6 +15,7 @@ using System.Text;
 //using DigitalPlatform.CirculationClient.localhost;
 using System.Diagnostics;
 using DigitalPlatform.Text;
+using System.Net;
 
 namespace dp2ConsoleToWeiXin
 {
@@ -23,7 +24,11 @@ namespace dp2ConsoleToWeiXin
     /// </summary>
     public class Instance : IDisposable
     {
-       
+        string url = "http://localhost:14153/index.aspx";
+        /// <summary>
+        /// 通道所使用的 HTTP Cookies
+        /// </summary>
+        public CookieContainer Cookies = new System.Net.CookieContainer();
 
         /// <summary>
         /// 构造函数
@@ -40,22 +45,22 @@ namespace dp2ConsoleToWeiXin
         //      true    退出命令
         public bool ProcessCommand(string line)
         {
+            line = line.Trim();
+
             if (line == "exit" || line == "quit")
                 return true;
 
             string strError = "";
             int nRet = 0;
 
-            List<string> parameters = ParseParameters(line);
-            if (parameters.Count == 0)
-                return false;
 
-            if (parameters[0] == "search")
+            if (line == "search")
             {
                 Console.WriteLine("search");
+
                 return false;
             }
-            if (parameters[0] == "myinfo")
+            if (line == "myinfo")
             {                
 
                 Console.WriteLine("myinfo");

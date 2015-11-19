@@ -15,7 +15,6 @@ namespace dp2ConsoleToWeiXin
 
                 while (true)
                 {
-                   // instance.DisplayPrompt();
 
                     string line = Console.ReadLine();
 

@@ -7,8 +7,8 @@
     <ProjectGuid>{AA0ADD05-854B-43F9-8C57-9A8768C7A564}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>dp2ConsoleToWeiXin</RootNamespace>
-    <AssemblyName>dp2ConsoleToWeiXin</AssemblyName>
+    <RootNamespace>ConsoleWeiXinToGZH</RootNamespace>
+    <AssemblyName>ConsoleWeiXinToGZH</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
