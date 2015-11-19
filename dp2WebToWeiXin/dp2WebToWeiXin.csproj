@@ -7,12 +7,12 @@
     <ProductVersion>
     </ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{2BD6F79E-A776-4A08-B972-C61F70F78BD5}</ProjectGuid>
+    <ProjectGuid>{5F90CC4A-C68A-489F-8CE2-44CAF5B59B23}</ProjectGuid>
     <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>dp2weixin</RootNamespace>
-    <AssemblyName>dp2weixin</AssemblyName>
+    <RootNamespace>dp2WebToWeiXin</RootNamespace>
+    <AssemblyName>dp2WebToWeiXin</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <UseIISExpress>true</UseIISExpress>
     <IISExpressSSLPort />
@@ -39,14 +39,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="Senparc.Weixin">
-      <HintPath>..\packages\Senparc.Weixin.4.5.1\lib\net45\Senparc.Weixin.dll</HintPath>
-    </Reference>
-    <Reference Include="Senparc.Weixin.MP">
-      <HintPath>..\packages\Senparc.Weixin.MP.13.4.4\lib\net45\Senparc.Weixin.MP.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.ServiceModel" />
     <Reference Include="System.Web.DynamicData" />
     <Reference Include="System.Web.Entity" />
     <Reference Include="System.Web.ApplicationServices" />
@@ -65,14 +57,6 @@
     <Reference Include="System.EnterpriseServices" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="img\book1.jpg" />
-    <Content Include="img\book2.jpg" />
-    <Content Include="img\book3.jpg" />
-    <Content Include="img\book4.jpg" />
-    <Content Include="img\notice.jpg" />
-    <Content Include="notice.xml" />
-    <Content Include="packages.config" />
-    <None Include="Properties\PublishProfiles\dp2weixin.pubxml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -82,45 +66,30 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Global.asax" />
-    <Content Include="Index.aspx" />
     <Content Include="Web.config" />
+    <Content Include="WeiXinApi.aspx" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="Index.aspx.cs">
-      <DependentUpon>Index.aspx</DependentUpon>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="WeiXinApi.aspx.cs">
+      <DependentUpon>WeiXinApi.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="Index.aspx.designer.cs">
-      <DependentUpon>Index.aspx</DependentUpon>
+    <Compile Include="WeiXinApi.aspx.designer.cs">
+      <DependentUpon>WeiXinApi.aspx</DependentUpon>
     </Compile>
-    <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Folder Include="Models\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\DigitalPlatform.IO\DigitalPlatform.IO.csproj">
-      <Project>{441cb814-af78-4503-91ef-dce5f3269502}</Project>
-      <Name>DigitalPlatform.IO</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\DigitalPlatform.Text\DigitalPlatform.Text.csproj">
-      <Project>{26f96cc3-a4a9-4bc4-a10a-bc7e25581ff6}</Project>
-      <Name>DigitalPlatform.Text</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\DigitalPlatform.Xml\DigitalPlatform.Xml.csproj">
-      <Project>{e6489e89-1349-4ee7-a00b-ac96b9912587}</Project>
-      <Name>DigitalPlatform.Xml</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\DigitalPlatform\DigitalPlatform.csproj">
-      <Project>{bdd43275-eaa0-4670-8ba3-0db5cd7598dd}</Project>
-      <Name>DigitalPlatform</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\dp2weixin.Server\dp2weixin.Server.csproj">
-      <Project>{a77b8a4a-3ae8-4bd7-b09a-bf8d92fe802d}</Project>
-      <Name>dp2weixin.Server</Name>
+    <ProjectReference Include="..\dp2weixin.CookieWebClient\dp2weixin.CookieWebClient.csproj">
+      <Project>{acdef862-d0e2-4e19-a2cb-06866abc9d5c}</Project>
+      <Name>dp2weixin.CookieWebClient</Name>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup>
@@ -136,9 +105,9 @@
         <WebProjectProperties>
           <UseIIS>True</UseIIS>
           <AutoAssignPort>True</AutoAssignPort>
-          <DevelopmentServerPort>14153</DevelopmentServerPort>
+          <DevelopmentServerPort>4150</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://localhost:14153/</IISUrl>
+          <IISUrl>http://localhost:4150/</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>

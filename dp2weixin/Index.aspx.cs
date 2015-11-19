@@ -66,7 +66,8 @@ namespace dp2weixin
                 var maxRecordCount = 10;
 
                 //自定义MessageHandler，对微信请求的详细判断操作都在这里面。
-                var messageHandler = new dp2MessageHandler(Request.InputStream, postModel, maxRecordCount);
+                var messageHandler = new dp2MessageHandler(Global.GlobalWeiXinServer,
+                    Request.InputStream, postModel, maxRecordCount);
                 messageHandler.ServerBaseUrl = Server.MapPath("~");
 
                 try
@@ -88,10 +89,10 @@ namespace dp2weixin
                 catch (Exception ex)
                 {                    
                     //将程序运行中发生的错误记录到日志
-                    dp2MessageHandler.WriteErrorLog(LibraryChannel.GetExceptionMessage(ex));
+                    messageHandler.WriteErrorLog(LibraryChannel.GetExceptionMessage(ex));
                     if (messageHandler.ResponseDocument != null)
                     {
-                        dp2MessageHandler.WriteErrorLog(messageHandler.ResponseDocument.ToString());
+                        messageHandler.WriteErrorLog(messageHandler.ResponseDocument.ToString());
                     }
 
                     // 返回给微信服务器为空内容

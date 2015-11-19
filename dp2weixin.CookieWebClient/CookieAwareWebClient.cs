@@ -4,7 +4,7 @@ using System.Linq;
 using System.Web;
 using System.Net;
 
-namespace dp2weixin.dp2RestfulApi
+namespace dp2weixin.CookieWebClient
 {
     /// <summary>
     /// 从WebClient继承

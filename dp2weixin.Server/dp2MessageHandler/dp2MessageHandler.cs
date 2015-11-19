@@ -3,7 +3,7 @@ using System.Configuration;
 using System.IO;
 using System.Text;
 using System.Collections.Generic;
-using System.Web.Configuration;
+//using System.Web.Configuration;
 using Senparc.Weixin.MP;
 using Senparc.Weixin.MP.Entities;
 using Senparc.Weixin.MP.MessageHandlers;
@@ -18,6 +18,7 @@ using DigitalPlatform.IO;
 using System.Diagnostics;
 using DigitalPlatform;
 using DigitalPlatform.Text;
+using dp2weixin.Server;
 
 namespace dp2weixin
 {
@@ -29,17 +30,21 @@ namespace dp2weixin
     {
         public string ServerBaseUrl = "";
 
+        public dp2WeiXinServer WeiXinServer = null;
+
         /// <summary>
         /// 构造函数
         /// </summary>
         /// <param name="inputStream"></param>
         /// <param name="maxRecordCount"></param>
-        public dp2MessageHandler(Stream inputStream, PostModel postModel, int maxRecordCount = 0)
+        public dp2MessageHandler(dp2WeiXinServer weiXinServer,Stream inputStream, PostModel postModel, int maxRecordCount = 0)
             : base(inputStream, postModel, maxRecordCount)
         {
             //这里设置仅用于测试，实际开发可以在外部更全局的地方设置，
             //比如MessageHandler<MessageContext>.GlobalWeixinContext.ExpireMinutes = 3。
             WeixinContext.ExpireMinutes = 3;
+
+            this.WeiXinServer = weiXinServer;
         }
 
         /// <summary>
@@ -232,8 +237,8 @@ namespace dp2weixin
             }
 
             // 从池中征用通道
-            LibraryChannel channel = Global.ChannelPool.GetChannel(Global.dp2Url, Global.dp2UserName);
-            channel.Password = Global.dp2Password;
+            LibraryChannel channel = this.WeiXinServer.ChannelPool.GetChannel(this.WeiXinServer.dp2Url, this.WeiXinServer.dp2UserName);
+            channel.Password = this.WeiXinServer.dp2Password;
             try
             {
                 string strError = "";
@@ -302,7 +307,7 @@ namespace dp2weixin
             finally
             {
                 // 归还通道到池
-                Global.ChannelPool.ReturnChannel(channel);
+                this.WeiXinServer.ChannelPool.ReturnChannel(channel);
             }
 
             return responseMessage;
@@ -416,8 +421,8 @@ namespace dp2weixin
             int index = strPath.IndexOf("*");
             if (index > 0)
                 strPath = strPath.Substring(0, index);
-            LibraryChannel channel = Global.ChannelPool.GetChannel(Global.dp2Url, Global.dp2UserName);
-            channel.Password = Global.dp2Password;
+            LibraryChannel channel = this.WeiXinServer.ChannelPool.GetChannel(this.WeiXinServer.dp2Url, this.WeiXinServer.dp2UserName);
+            channel.Password = this.WeiXinServer.dp2Password;
             try
             {
                 string strError = "";
@@ -439,7 +444,7 @@ namespace dp2weixin
             }
             finally
             {
-                Global.ChannelPool.ReturnChannel(channel);
+                this.WeiXinServer.ChannelPool.ReturnChannel(channel);
             }
             return responseMessage;
         }
@@ -457,8 +462,8 @@ namespace dp2weixin
         /// <returns></returns>
         public IResponseMessageBase Binding(string strBarcode, string strPassword, string openid)
         {
-            LibraryChannel channel = Global.ChannelPool.GetChannel(Global.dp2Url, Global.dp2UserName);
-            channel.Password = Global.dp2Password;
+            LibraryChannel channel = this.WeiXinServer.ChannelPool.GetChannel(this.WeiXinServer.dp2Url, this.WeiXinServer.dp2UserName);
+            channel.Password = this.WeiXinServer.dp2Password;
             try
             {
                 // 检验用户名与密码
@@ -550,7 +555,7 @@ namespace dp2weixin
             }
             finally
             {
-                Global.ChannelPool.ReturnChannel(channel);
+                this.WeiXinServer.ChannelPool.ReturnChannel(channel);
             }
         }
 
@@ -583,8 +588,8 @@ namespace dp2weixin
             }
             else if (lRet == 1)
             {
-                LibraryChannel channel = Global.ChannelPool.GetChannel(Global.dp2Url, Global.dp2UserName);
-                channel.Password = Global.dp2Password;
+                LibraryChannel channel = this.WeiXinServer.ChannelPool.GetChannel(this.WeiXinServer.dp2Url, this.WeiXinServer.dp2UserName);
+                channel.Password = this.WeiXinServer.dp2Password;
                 try
                 {
                     // 进行解绑工作
@@ -666,7 +671,7 @@ namespace dp2weixin
                 }
                 finally
                 {
-                    Global.ChannelPool.ReturnChannel(channel);
+                    this.WeiXinServer.ChannelPool.ReturnChannel(channel);
                 }
             }
             else
@@ -722,8 +727,8 @@ namespace dp2weixin
                         || this.CurrentMessageContext.CurrentAction == dp2WeiXinConst.ACTION_BorrowInfo
                         || this.CurrentMessageContext.CurrentAction == dp2WeiXinConst.ACTION_Renew)
                 {
-                    LibraryChannel channel = Global.ChannelPool.GetChannel(Global.dp2Url, Global.dp2UserName);
-                    channel.Password = Global.dp2Password;
+                    LibraryChannel channel = this.WeiXinServer.ChannelPool.GetChannel(this.WeiXinServer.dp2Url, this.WeiXinServer.dp2UserName);
+                    channel.Password = this.WeiXinServer.dp2Password;
                     try
                     {
                         // 对于已绑定的用户，取出Barcode，用于续借
@@ -749,7 +754,7 @@ namespace dp2weixin
                     }
                     finally
                     {
-                        Global.ChannelPool.ReturnChannel(channel);
+                        this.WeiXinServer.ChannelPool.ReturnChannel(channel);
                     }
                 }
                 else
@@ -987,8 +992,8 @@ namespace dp2weixin
             }
 
 
-            LibraryChannel channel = Global.ChannelPool.GetChannel(Global.dp2Url, Global.dp2UserName);
-            channel.Password = Global.dp2Password;
+            LibraryChannel channel = this.WeiXinServer.ChannelPool.GetChannel(this.WeiXinServer.dp2Url, this.WeiXinServer.dp2UserName);
+            channel.Password = this.WeiXinServer.dp2Password;
             try
             {
                 string strError = "";
@@ -1011,7 +1016,7 @@ namespace dp2weixin
             }
             finally
             {
-                Global.ChannelPool.ReturnChannel(channel);
+                this.WeiXinServer.ChannelPool.ReturnChannel(channel);
             }
 
 
@@ -1040,8 +1045,8 @@ namespace dp2weixin
 
             long lRet = 0;
 
-            LibraryChannel channel = Global.ChannelPool.GetChannel(Global.dp2Url, Global.dp2UserName);
-            channel.Password = Global.dp2Password;
+            LibraryChannel channel = this.WeiXinServer.ChannelPool.GetChannel(this.WeiXinServer.dp2Url, this.WeiXinServer.dp2UserName);
+            channel.Password = this.WeiXinServer.dp2Password;
             try
             {
                 string strWeiXinId = "weixinid:" + openid;
@@ -1075,7 +1080,7 @@ namespace dp2weixin
             }
             finally
             {
-                Global.ChannelPool.ReturnChannel(channel);
+                this.WeiXinServer.ChannelPool.ReturnChannel(channel);
             }
 
             return 1;
@@ -1198,7 +1203,7 @@ namespace dp2weixin
         /// 写错误日志
         /// </summary>
         /// <param name="strText"></param>
-        public static void WriteErrorLog(string strText)
+        public  void WriteErrorLog(string strText)
         {
             try
             {
@@ -1206,7 +1211,7 @@ namespace dp2weixin
                 {
                     DateTime now = DateTime.Now;
                     // 每天一个日志文件
-                    string strFilename = PathUtil.MergePath(Global.dp2WeiXinLogDir, "log_" + DateTimeUtil.DateTimeToString8(now) + ".txt");
+                    string strFilename = PathUtil.MergePath(this.WeiXinServer.dp2WeiXinLogDir, "log_" + DateTimeUtil.DateTimeToString8(now) + ".txt");
                     string strTime = now.ToString();
                     StreamUtil.WriteText(strFilename,
                         strTime + " " + strText + "\r\n");
@@ -1249,7 +1254,7 @@ namespace dp2weixin
                 {
                     Title = DomUtil.GetNodeText(node.SelectSingleNode("Title")),
                     Description = DomUtil.GetNodeText(node.SelectSingleNode("Description")),
-                    PicUrl = Global.dp2WeiXinUrl + DomUtil.GetNodeText(node.SelectSingleNode("PicUrl")),
+                    PicUrl = this.WeiXinServer.dp2WeiXinUrl + DomUtil.GetNodeText(node.SelectSingleNode("PicUrl")),
                     Url = DomUtil.GetNodeText(node.SelectSingleNode("Url"))
                 });
             }
@@ -1280,7 +1285,7 @@ namespace dp2weixin
                 article.Description = DomUtil.GetNodeText(node.SelectSingleNode("Description"));
                 string picUrl = DomUtil.GetNodeText(node.SelectSingleNode("PicUrl"));
                 if (String.IsNullOrEmpty(picUrl) == false)
-                    article.PicUrl = Global.dp2WeiXinUrl + picUrl;
+                    article.PicUrl = this.WeiXinServer.dp2WeiXinUrl + picUrl;
                 article.Url = DomUtil.GetNodeText(node.SelectSingleNode("Url"));
                 responseMessage.Articles.Add(article);
             }
