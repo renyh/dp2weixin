@@ -81,15 +81,16 @@
     <Compile Include="WeiXinApi.aspx.designer.cs">
       <DependentUpon>WeiXinApi.aspx</DependentUpon>
     </Compile>
+    <Compile Include="WeiXinClientUtil.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
     <Folder Include="Models\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\dp2weixin.CookieWebClient\dp2weixin.CookieWebClient.csproj">
-      <Project>{acdef862-d0e2-4e19-a2cb-06866abc9d5c}</Project>
-      <Name>dp2weixin.CookieWebClient</Name>
+    <ProjectReference Include="..\dp2Command.Server\dp2Command.Server.csproj">
+      <Project>{a77b8a4a-3ae8-4bd7-b09a-bf8d92fe802d}</Project>
+      <Name>dp2Command.Server</Name>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup>

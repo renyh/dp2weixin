@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace dp2weixin.CookieWebClient
+namespace dp2weixin
 {
     public static class WeiXinClientUtil
     {

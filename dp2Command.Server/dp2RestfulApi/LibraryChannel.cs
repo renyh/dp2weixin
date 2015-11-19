@@ -16,7 +16,7 @@ using DigitalPlatform;
 using System.Runtime.Serialization.Json;
 using System.Web;
 using DigitalPlatform.Text;
-using dp2weixin.CookieWebClient;
+using dp2Command.Server;
 
 namespace dp2Command.Server.dp2RestfulApi
 {

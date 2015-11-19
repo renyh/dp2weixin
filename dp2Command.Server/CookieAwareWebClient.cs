@@ -4,7 +4,7 @@ using System.Linq;
 using System.Web;
 using System.Net;
 
-namespace dp2weixin.CookieWebClient
+namespace dp2Command.Server
 {
     /// <summary>
     /// 从WebClient继承
