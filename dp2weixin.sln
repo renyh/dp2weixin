@@ -19,6 +19,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dp2weixin.CookieWebClient",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dp2WebToWeiXin", "dp2WebToWeiXin\dp2WebToWeiXin.csproj", "{5F90CC4A-C68A-489F-8CE2-44CAF5B59B23}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dp2ConsoleToWeiXin", "dp2ConsoleToWeiXin\dp2ConsoleToWeiXin.csproj", "{AA0ADD05-854B-43F9-8C57-9A8768C7A564}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -113,6 +115,15 @@ Global
 		{5F90CC4A-C68A-489F-8CE2-44CAF5B59B23}.Test|Any CPU.ActiveCfg = Release|Any CPU
 		{5F90CC4A-C68A-489F-8CE2-44CAF5B59B23}.Test|Any CPU.Build.0 = Release|Any CPU
 		{5F90CC4A-C68A-489F-8CE2-44CAF5B59B23}.Test|x86.ActiveCfg = Release|Any CPU
+		{AA0ADD05-854B-43F9-8C57-9A8768C7A564}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AA0ADD05-854B-43F9-8C57-9A8768C7A564}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AA0ADD05-854B-43F9-8C57-9A8768C7A564}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{AA0ADD05-854B-43F9-8C57-9A8768C7A564}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AA0ADD05-854B-43F9-8C57-9A8768C7A564}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AA0ADD05-854B-43F9-8C57-9A8768C7A564}.Release|x86.ActiveCfg = Release|Any CPU
+		{AA0ADD05-854B-43F9-8C57-9A8768C7A564}.Test|Any CPU.ActiveCfg = Release|Any CPU
+		{AA0ADD05-854B-43F9-8C57-9A8768C7A564}.Test|Any CPU.Build.0 = Release|Any CPU
+		{AA0ADD05-854B-43F9-8C57-9A8768C7A564}.Test|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
