@@ -8,6 +8,7 @@ using DigitalPlatform.Text;
 using System.Net;
 using DigitalPlatform.IO;
 using dp2Command.Server;
+using dp2Command.Server.Command;
 
 namespace dp2ConsoleToWeiXin
 {
@@ -17,6 +18,8 @@ namespace dp2ConsoleToWeiXin
     public class Instance : IDisposable
     {
         public dp2CommandServer WeiXinServer = null;
+
+        public string WeiXinId = "1234567890";
 
         /// <summary>
         /// 构造函数
@@ -42,8 +45,6 @@ namespace dp2ConsoleToWeiXin
                 strDp2WeiXinUrl,
                 strDp2WeiXinLogDir);
         }
-
-
  
         // return:
         //      false   正常，继续
@@ -60,19 +61,20 @@ namespace dp2ConsoleToWeiXin
 
 
             // 用:号分隔命令与参数，例如：
-            // search:newsearch 重新发起检索
-            // search:n             显示上次命中结果集中下一页
-            // search:序号         显示详细
+            // search 空 重新发起检索
+            // search n             显示上次命中结果集中下一页
+            // search 序号         显示详细
+            // binding r0000001/111111
             string strCommand = line;
             string strParam = "";
-            int nIndex = line.IndexOf(':');
+            int nIndex = line.IndexOf(' ');
             if (nIndex > 0)
             {
                 strCommand = line.Substring(0, nIndex);
                 strParam = line.Substring(nIndex+1);
             }
 
-            // 检索是否是命令，如果不是，则将输入认为是当前命令的参数（二级命令）
+            // 检查是否是命令，如果不是，则将输入认为是当前命令的参数（二级命令）
             bool bRet = dp2CommandUtility.CheckIsCommand(strCommand);
             if (bRet == false)
             {
@@ -153,8 +155,68 @@ namespace dp2ConsoleToWeiXin
                     return false; 
                 }
 
-
                 Console.WriteLine("当前是Search命令，未知的命令参数'" + strParam + "'");
+                return false;
+            }
+
+            // 绑定读者账号
+            if (strCommand ==dp2CommandUtility.C_Command_Binding)
+            {
+                // 设置当前命令
+                this.WeiXinServer.CurrentCmdName = strCommand;
+
+                if (strParam == "")
+                {
+                    Console.WriteLine("请输入'读者证条码号'（注:您也可以同时输入'读者证条码号'和'密码'，中间以/分隔，例如:R0000001/123）。");
+                    
+                    // 这里换成与微信一样的情况，不能直接取值
+                    //strParam = Console.ReadLine();
+                    return false;
+                }
+
+                // 看看上一次输入过用户名的没有？如果已存在用户名，那么这次输入的就是密码
+                BindingCommand bindingCmd = (BindingCommand)this.WeiXinServer.CmdContiner.GetCommand(strCommand);
+
+
+                string readerBarcode = strParam;
+                string password = "";
+                int nTempIndex = strParam.IndexOf('/');
+                if (nTempIndex > 0) // 同时输入读者证条码与密码
+                {
+                    bindingCmd.ReaderBarcode = strParam.Substring(0, nTempIndex);
+                    bindingCmd.Password = strParam.Substring(nTempIndex + 1);
+                }
+                else
+                {
+                    // 看看上一次输入过用户名的没有？如果已存在用户名，那么这次输入的就是密码
+                    if (bindingCmd.ReaderBarcode == "")
+                    {
+                        bindingCmd.ReaderBarcode = strParam;
+                        Console.WriteLine("读输入密码");
+                        return false;
+                    }
+                    else
+                    {
+                        bindingCmd.Password = strParam;
+                    }
+                }
+
+                int nRet = this.WeiXinServer.Binding(bindingCmd.ReaderBarcode,
+                    bindingCmd.Password, 
+                    this.WeiXinId, 
+                    out strError);
+                if (nRet == -1 || nRet==0)
+                {
+                    Console.WriteLine(strError);
+                }
+                else if (nRet == 1)
+                {
+                    // 把用户名与密码清掉，以便再绑其它账号
+                    bindingCmd.ReaderBarcode = "";
+                    bindingCmd.Password = "";
+                    Console.WriteLine("绑定成功!");
+                }
+
                 return false;
             }
 
@@ -171,41 +233,6 @@ namespace dp2ConsoleToWeiXin
         }
 
 
-        static List<string> ParseParameters(string line)
-        {
-            // string[] parameters = line.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-            // List<string> result = new List<string>(parameters);
-
-            List<string> result0 = StringUtil.SplitString(line,
-                " ",
-                new string[] { "''" },
-                StringSplitOptions.RemoveEmptyEntries);
-
-            List<string> result1 = new List<string>();
-            foreach (string s in result0)
-            {
-                result1.Add(UnQuote(s));
-            }
-
-            // 对第一个元素修正一下。从左面开始，如果出现第一个标点符号，就认为这里应该断开
-            if (result1.Count > 0)
-            {
-                string strText = result1[0];
-                int index = strText.IndexOfAny(new char[] { '.', '/', '\\' });
-                if (index != -1)
-                {
-                    result1[0] = strText.Substring(0, index);
-                    result1.Insert(1, strText.Substring(index));
-                }
-            }
-
-            return result1;
-        }
-
-        static string UnQuote(string strText)
-        {
-            return strText.Replace("'", "");
-        }
 
         // Implement IDisposable.
         // Do not make this method virtual.

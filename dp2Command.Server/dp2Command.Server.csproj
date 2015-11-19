@@ -47,6 +47,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Command\BindingCommand.cs" />
     <Compile Include="Command\SearchCommand.cs" />
     <Compile Include="Command\BaseCommand.cs" />
     <Compile Include="Command\CommandContainer.cs" />

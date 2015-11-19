@@ -1,9 +1,12 @@
-﻿using dp2Command.Server.dp2RestfulApi;
+﻿using DigitalPlatform.Text;
+using dp2Command.Server.dp2RestfulApi;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace dp2Command.Server
 {
@@ -22,11 +25,24 @@ namespace dp2Command.Server
         public LibraryChannelPool ChannelPool = null;
 
         // 命令集合
-        CommandContainer CmdContiner = null;
+        public CommandContainer CmdContiner = null;
 
         // 当前命令
         public string CurrentCmdName = null;
 
+        /// <summary>
+        /// 读者证条码号，如果未绑定则为空
+        /// </summary>
+        public string ReaderBarcode = "";
+
+        /// <summary>
+        /// 构造函数
+        /// </summary>
+        /// <param name="strDp2Url"></param>
+        /// <param name="strDp2UserName"></param>
+        /// <param name="strDp2Password"></param>
+        /// <param name="strDp2WeiXinUrl"></param>
+        /// <param name="strDp2WeiXinLogDir"></param>
         public dp2CommandServer(string strDp2Url,
             string strDp2UserName,
             string strDp2Password,
@@ -70,6 +86,7 @@ namespace dp2Command.Server
             e.Password = channel.Password;
         }
 
+        #region 检索相关
 
         /// <summary>
         /// 检索书目
@@ -235,5 +252,194 @@ namespace dp2Command.Server
             }
             return 0;
         }
+
+        #endregion
+
+        #region 绑定
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="strBarcode"></param>
+        /// <param name="strPassword"></param>
+        /// <param name="weiXinId"></param>
+        /// <returns>
+        /// -1 出错
+        /// 0 读者证条码号或密码不正确
+        /// 1 成功
+        /// </returns>
+        public int Binding(string strBarcode, 
+            string strPassword, 
+            string weiXinId,
+            out string strError)
+        {
+            strError = "";
+
+            LibraryChannel channel = this.ChannelPool.GetChannel(this.dp2Url, this.dp2UserName);
+            channel.Password = this.dp2Password;
+            try
+            {
+                // 检验用户名与密码                
+                long lRet = channel.VerifyReaderPassword(strBarcode,
+                   strPassword,
+                    out strError);
+                if (lRet == -1)
+                {
+                    strError = "读者证条码号或密码不正确。\n请重新输入'读者证条码号'（注:您也可以同时输入'读者证条码号'和'密码'，中间以/分隔，例如:R0000001/123）";
+                    return 0;
+                }
+
+                if (lRet == 0)
+                {
+                    strError = "读者证条码号或密码不正确。\n请重新输入'读者证条码号'（注:您也可以同时输入'读者证条码号'和'密码'，中间以/分隔，例如:R0000001/123）";
+                    return 0;
+                }
+
+                if (lRet == 1)
+                {
+                    // 进行绑定
+                    // 先根据barcode检索出来,得到原记录与时间戳
+                    GetReaderInfoResponse response = channel.GetReaderInfo(strBarcode,
+                        "xml,advancexml,advancexml_borrow_bibliosummary,advancexml_overdue_bibliosummary");
+                    if (response.GetReaderInfoResult.Value != 1)
+                    {
+                        strError = "根据读者证条码号得到读者记录异常：" + response.GetReaderInfoResult.ErrorInfo;
+                        return -1;
+                    }
+                    string strRecPath = response.strRecPath;
+                    string strTimestamp = StringUtil.GetHexTimeStampString(response.baTimestamp);
+                    string strXml = response.results[0];
+                    string strAdvanceXml = response.results[1];
+
+                    // 改读者的email字段
+                    XmlDocument readerDom = new XmlDocument();
+                    readerDom.LoadXml(strXml);
+                    XmlNode emailNode = readerDom.SelectSingleNode("//email");
+                    if (emailNode == null)
+                    {
+                        emailNode = readerDom.CreateElement("email");
+                        readerDom.DocumentElement.AppendChild(emailNode);
+                    }
+
+                    emailNode.InnerText = JoinEmail(emailNode.InnerText, weiXinId);
+                    string strNewXml = ConvertXmlToString(readerDom);
+
+                    // 更新到读者库
+                    lRet = channel.SetReaderInfoForWeiXin(strRecPath,
+                        strNewXml,
+                        strTimestamp,
+                        out strError);
+                    if (lRet == -1)
+                    {
+                        strError = "绑定出错：" + strError;
+                        return -1;
+                    }
+
+                    // 绑定成功，把读者证条码记下来，用于续借 2015/11/7
+                    this.ReaderBarcode = strBarcode;
+                    return 1;
+
+                }
+
+                strError = "校验读者账号返回未知情况，返回值：" + lRet.ToString() + "-" + strError;
+                return -1;
+            }
+            finally
+            {
+                this.ChannelPool.ReturnChannel(channel);
+            }
+        }
+
+
+        #endregion
+
+        #region 静态函数
+
+        /// <summary>
+        /// 拼email
+        /// </summary>
+        /// <param name="oldEmail"></param>
+        /// <param name="openid"></param>
+        /// <returns></returns>
+        public static string JoinEmail(string oldEmail, string openid)
+        {
+            string email = oldEmail.Trim();
+            string strEmailLeft = email;
+            string strEmailLRight = "";
+            int nIndex = email.IndexOf("weixinid:");
+            if (nIndex > 0)
+            {
+                strEmailLeft = email.Substring(0, nIndex);
+                string strOldWeixinId = email.Substring(nIndex);
+                nIndex = strOldWeixinId.IndexOf(',');
+                if (nIndex > 0)
+                {
+                    strEmailLRight = strOldWeixinId.Substring(nIndex);
+                    strOldWeixinId = strOldWeixinId.Substring(0, nIndex);
+                }
+                strEmailLeft = TrimComma(strEmailLeft);
+                strEmailLRight = TrimComma(strEmailLRight);
+            }
+            email = strEmailLeft;
+            if (strEmailLRight != "")
+            {
+                if (email != "")
+                    email += ",";
+                email += strEmailLRight;
+            }
+
+            if (openid != null && openid != "")
+            {
+                if (email != "")
+                    email += ",";
+                email += "weixinid:" + openid;
+            }
+
+            return email;
+        }
+
+        /// <summary>
+        /// 去掉前后逗号
+        /// </summary>
+        /// <param name="strText"></param>
+        /// <returns></returns>
+        public static string TrimComma(string strText)
+        {
+            if (strText == null || strText.Length == 0)
+                return strText;
+
+            int nIndex = strText.LastIndexOf(',');
+            if (nIndex > 0)
+                strText = strText.Substring(0, nIndex);
+
+            nIndex = strText.IndexOf(',');
+            if (nIndex > 0)
+                strText = strText.Substring(nIndex + 1);
+
+            return strText;
+        }
+
+        /// <summary>
+        /// 将XmlDocument转化为string
+        /// </summary>
+        /// <param name="xmlDoc"></param>
+        /// <returns></returns>
+        public static string ConvertXmlToString(XmlDocument xmlDoc)
+        {
+            MemoryStream stream = new MemoryStream();
+            XmlTextWriter writer = new XmlTextWriter(stream, null);
+            writer.Formatting = Formatting.Indented;
+            xmlDoc.Save(writer);
+
+            StreamReader sr = new StreamReader(stream, System.Text.Encoding.UTF8);
+            stream.Position = 0;
+            string xmlString = sr.ReadToEnd();
+            sr.Close();
+            stream.Close();
+
+            return xmlString;
+        }
+
+        #endregion
     }
 }

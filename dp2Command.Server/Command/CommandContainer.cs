@@ -1,4 +1,5 @@
-﻿using System;
+﻿using dp2Command.Server.Command;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -27,6 +28,10 @@ namespace dp2Command.Server
             if (cmdName == dp2CommandUtility.C_Command_Search)
             {
                 command = new SearchCommand();
+            }
+            else if (cmdName == dp2CommandUtility.C_Command_Binding)
+            {
+                command = new BindingCommand();
             }
             else
             {

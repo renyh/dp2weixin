@@ -709,7 +709,7 @@ namespace dp2weixin
             else if (lRet == 0) // 未绑定
             {
                 this.CurrentMessageContext.BindingStep = 0;
-                string text = "请输入'读者证条码号'（注:您也可以同时输入'读者证条码号'和'密码'，中间以/分隔，例如:R0000001/123）。<font color='red'>请点左下角的小键盘图标，切换输入框方式。</font>";
+                string text = "请输入'读者证条码号'（注:您也可以同时输入'读者证条码号'和'密码'，中间以/分隔，例如:R0000001/123）。";
                 if (this.CurrentMessageContext.CurrentAction != "Binding")
                     text = "您尚未绑定读者账号，" + text;
                 responseMessage.Content = text;
