@@ -70,6 +70,7 @@
     <Content Include="img\book3.jpg" />
     <Content Include="img\book4.jpg" />
     <Content Include="img\notice.jpg" />
+    <Content Include="newbooks.xml" />
     <Content Include="notice.xml" />
     <Content Include="packages.config" />
     <None Include="Properties\PublishProfiles\dp2weixin.pubxml" />
