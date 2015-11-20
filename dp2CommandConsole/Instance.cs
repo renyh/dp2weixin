@@ -60,7 +60,7 @@ namespace dp2ConsoleToWeiXin
             long lRet = 0;
 
 
-            // 用:号分隔命令与参数，例如：
+            // 用空隔号分隔命令与参数，例如：
             // search 空 重新发起检索
             // search n             显示上次命中结果集中下一页
             // search 序号         显示详细
@@ -168,18 +168,13 @@ namespace dp2ConsoleToWeiXin
                 if (strParam == "")
                 {
                     Console.WriteLine("请输入'读者证条码号'（注:您也可以同时输入'读者证条码号'和'密码'，中间以/分隔，例如:R0000001/123）。");
-                    
-                    // 这里换成与微信一样的情况，不能直接取值
-                    //strParam = Console.ReadLine();
                     return false;
                 }
 
                 // 看看上一次输入过用户名的没有？如果已存在用户名，那么这次输入的就是密码
                 BindingCommand bindingCmd = (BindingCommand)this.WeiXinServer.CmdContiner.GetCommand(strCommand);
 
-
                 string readerBarcode = strParam;
-                string password = "";
                 int nTempIndex = strParam.IndexOf('/');
                 if (nTempIndex > 0) // 同时输入读者证条码与密码
                 {
@@ -220,12 +215,47 @@ namespace dp2ConsoleToWeiXin
                 return false;
             }
 
-            if (strCommand == "myinfo")
-            { 
-                Console.WriteLine("尚未绑定读者账号，请调Binding命令先绑定");
+            // 解除绑定
+            if (strCommand == dp2CommandUtility.C_Command_Unbinding)
+            {
+                // 设置当前命令
+                this.WeiXinServer.CurrentCmdName = strCommand;
+
+                int nRet = this.WeiXinServer.Unbinding(this.WeiXinId, out strError);
+                if (nRet == -1 || nRet == 0)
+                {
+                    Console.WriteLine(strError);
+                    return false;
+                }
+
+                Console.WriteLine("解除绑定成功。");
                 return false;
+
             }
 
+            if (strCommand == "myinfo")
+            { 
+                string strMyInfo="";
+                int nRet = this.WeiXinServer.GetMyInfo(this.WeiXinId, out strMyInfo,
+                    out strError);
+                if (nRet == -1)
+                {
+                    Console.WriteLine(strError);
+                    return false;
+                }
+
+                // 尚未绑定读者账号
+                if (nRet == 0)
+                {
+                    Console.WriteLine("尚未绑定读者账号，请调Binding命令先绑定");
+                    return false;
+                }
+
+                // 显示个人信息
+                Console.WriteLine(strMyInfo);
+                return false;
+            }
+             
 
             Console.WriteLine("unknown command '" + strCommand + "'");
             return false;

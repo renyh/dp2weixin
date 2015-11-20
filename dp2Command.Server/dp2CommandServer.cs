@@ -1,4 +1,6 @@
-﻿using DigitalPlatform.Text;
+﻿using DigitalPlatform.IO;
+using DigitalPlatform.Text;
+using DigitalPlatform.Xml;
 using dp2Command.Server.dp2RestfulApi;
 using System;
 using System.Collections.Generic;
@@ -255,7 +257,7 @@ namespace dp2Command.Server
 
         #endregion
 
-        #region 绑定
+        #region 绑定解绑
 
         /// <summary>
         /// 
@@ -350,6 +352,303 @@ namespace dp2Command.Server
             }
         }
 
+        private long SearchReaderByOpenId(string weiXinId, out string strRecPath, out string strXml,
+            out string strError)
+        {
+            strError = "";
+            strRecPath = "";
+            strXml = "";
+
+            long lRet = 0;
+
+            LibraryChannel channel = this.ChannelPool.GetChannel(this.dp2Url, this.dp2UserName);
+            channel.Password = this.dp2Password;
+            try
+            {
+                string strWeiXinId = "weixinid:" + weiXinId;
+                lRet = channel.SearchReaderByWeiXinId(strWeiXinId, out strError);
+                if (lRet == -1)
+                {
+                    strError = "检索微信用户对应的读者出错:" + strError;
+                    return -1;
+                }
+                else if (lRet > 1)
+                {
+                    strError = "检索微信用户对应的读者异常，得到" + lRet.ToString() + "条读者记录";
+                    return -1;
+                }
+                else if (lRet == 0)
+                {
+                    strError = "根据微信id未找到对应读者。";
+                    return 0;
+                }
+                else if (lRet == 1)
+                {
+                    lRet = channel.GetSearchResultForWeiXinUser(out strRecPath,
+                         out strXml,
+                         out strError);
+                    if (lRet != 1)
+                    {
+                        strError = "获取结果集异常:" + strError;
+                        return -1;
+                    }
+                }
+            }
+            finally
+            {
+                this.ChannelPool.ReturnChannel(channel);
+            }
+
+            return 1;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="weiXinId"></param>
+        /// <param name="strError"></param>
+        /// <returns>
+        /// -1 出错
+        /// 0   本来就未绑定，不需解绑
+        /// 1   解除绑定成功
+        /// </returns>
+        public int Unbinding(string weiXinId, out string strError)
+        {
+            strError = "";
+
+            // 根据openid检索是否已经绑定的读者
+            string strRecPath = "";
+            string strXml = "";
+            long lRet = this.SearchReaderByOpenId(weiXinId, out strRecPath,
+                out strXml,
+                out strError);
+            if (lRet == -1)
+                return -1;
+            // 未绑定
+            if (lRet == 0)
+            {
+                strError = "您尚未绑定读者账号，不需要解除绑定。";
+                return 0;
+            }
+            if (lRet != 1)
+            {
+                strError = "异常：解绑应该不会走到这里。";
+                return -1;
+            }
+
+            LibraryChannel channel = this.ChannelPool.GetChannel(this.dp2Url, this.dp2UserName);
+            channel.Password = this.dp2Password;
+            try
+            {
+                // 进行解绑工作
+                string strPath = "";
+                lRet = channel.GetSearchResultForWeiXinUser(out strPath,
+                     out strXml,
+                     out strError);
+                if (lRet != 1)
+                {
+                    strError = "获取结果集异常:" + strError;
+                    return -1;
+                }
+
+                // 先根据barcode检索出来,得到原记录与时间戳
+                string barcode = "@path:" + strPath;
+                GetReaderInfoResponse response = channel.GetReaderInfo(barcode, "xml");
+                if (response.GetReaderInfoResult.Value != 1)
+                {
+                    strError = "根据路径得到读者记录异常：" + response.GetReaderInfoResult.ErrorInfo;
+                    return -1;
+                }
+                strRecPath = response.strRecPath;
+                string strTimestamp = StringUtil.GetHexTimeStampString(response.baTimestamp);
+                strXml = response.results[0];
+
+                // 修改xml中的email字段，去掉weixin:***
+                // 改为读者的email字段
+                XmlDocument readerDom = new XmlDocument();
+                readerDom.LoadXml(strXml);
+                XmlNode emailNode = readerDom.SelectSingleNode("//email");
+                string email = emailNode.InnerText.Trim();
+                string strEmailLeft = email;
+                string strEmailLRight = "";
+                int nIndex = email.IndexOf("weixinid:");
+                if (nIndex >= 0)
+                {
+                    strEmailLeft = email.Substring(0, nIndex);
+                    string strOldWeixinId = email.Substring(nIndex);
+                    nIndex = strOldWeixinId.IndexOf(',');
+                    if (nIndex > 0)
+                    {
+                        strEmailLRight = strOldWeixinId.Substring(nIndex);
+                        strOldWeixinId = strOldWeixinId.Substring(0, nIndex);
+                    }
+                    strEmailLeft = TrimComma(strEmailLeft);
+                    strEmailLRight = TrimComma(strEmailLRight);
+                }
+                email = strEmailLeft;
+                if (strEmailLRight != "")
+                {
+                    if (email != "")
+                        email += ",";
+                    email += strEmailLRight;
+                }
+                emailNode.InnerText = email;
+                string strNewXml = ConvertXmlToString(readerDom);
+
+                // 更新到读者库
+                lRet = channel.SetReaderInfoForWeiXin(strPath,
+                    strNewXml,
+                    strTimestamp,
+                    out strError);
+                if (lRet == -1)
+                {
+                    strError = "解除绑定出错：" + strError;
+                    return -1;
+                }
+                return 1;
+            }
+            finally
+            {
+                this.ChannelPool.ReturnChannel(channel);
+            }
+
+
+        }
+
+        #endregion
+
+
+        #region 我的空间
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="openid"></param>
+        /// <param name="myinfo"></param>
+        /// <param name="strError"></param>
+        /// <returns>
+        /// -1  出错
+        /// 0   未绑定
+        /// 1   成功
+        /// </returns>
+        public int GetMyInfo(string openid, out string strMyInfo, out string strError)
+        {
+            strError = "";
+            strMyInfo = "";
+
+            // 根据openid检索绑定的读者
+            string strRecPath = "";
+            string strXml = "";
+            long lRet = this.SearchReaderByOpenId(openid, out strRecPath,
+                out strXml,
+                out strError);
+            if (lRet == -1)
+                return -1;
+
+            // 未绑定
+            if (lRet == 0)
+            {
+                strError = "尚未绑定读者账号";
+                return 0;
+            }
+
+            // 异常，这里不可能不定1
+            if (lRet != 1)
+            {
+                strError = "SearchReaderByOpenId()函数返回值" + lRet + "异常";
+                return -1;
+            }
+
+            LibraryChannel channel = this.ChannelPool.GetChannel(this.dp2Url, this.dp2UserName);
+            channel.Password = this.dp2Password;
+            try
+            {
+                // 对于已绑定的用户，取出Barcode，用于续借
+                XmlDocument dom = new XmlDocument();
+                dom.LoadXml(strXml);
+                XmlNode barcodeNode = dom.SelectSingleNode("/root/barcode");
+
+                //todo??这里还需要赋值吗？
+                this.ReaderBarcode = barcodeNode.InnerText;
+
+                // 先根据barcode检索出来,得到原记录与时间戳
+                GetReaderInfoResponse response = channel.GetReaderInfo("@path:" + strRecPath,
+                    "advancexml,advancexml_borrow_bibliosummary,advancexml_overdue_bibliosummary");
+                if (response.GetReaderInfoResult.Value != 1)
+                {
+                    strError = "根据读者证条码号得到读者记录异常：" + response.GetReaderInfoResult.ErrorInfo;
+                    return -1;
+                }
+                string strTimestamp = StringUtil.GetHexTimeStampString(response.baTimestamp);
+                strXml = response.results[0];
+
+                dom = new XmlDocument();
+                dom.LoadXml(strXml);
+                strMyInfo = this.GetReaderInfoMessage(dom);
+                return 1;
+            }
+            finally
+            {
+                this.ChannelPool.ReturnChannel(channel);
+            }
+        }
+
+        /// <summary>
+        /// 输出个人信息
+        /// </summary>
+        /// <param name="dom"></param>
+        /// <returns></returns>
+        private string GetReaderInfoMessage(XmlDocument dom)
+        {
+            string strReaderBarcode = DomUtil.GetElementText(dom.DocumentElement, "barcode");
+            string strName = DomUtil.GetElementText(dom.DocumentElement, "name");
+            string strDepartment = DomUtil.GetElementText(dom.DocumentElement, "department");
+            string strState = DomUtil.GetElementText(dom.DocumentElement, "state");
+            string strCreateDate = DateTimeUtil.ToLocalTime(DomUtil.GetElementText(dom.DocumentElement,
+                "createDate"), "yyyy/MM/dd");
+            string strExpireDate = DateTimeUtil.ToLocalTime(DomUtil.GetElementText(dom.DocumentElement,
+                "expireDate"), "yyyy/MM/dd");
+            string strReaderType = DomUtil.GetElementText(dom.DocumentElement,
+                "readerType");
+            string strComment = DomUtil.GetElementText(dom.DocumentElement,
+                "comment");
+
+            string strText ="个人信息"+"\n"
+                + "姓名：" + strName + "\n"
+                + "证条码号：" + strReaderBarcode + "\n"
+                + "部门：" + strDepartment + "\n"
+                + "联系方式：\n" + GetContactString(dom) + "\n"
+                + "状态：" + strState + "\n"
+                + "有效期：" + strCreateDate + "~" + strExpireDate + "\n"
+                + "读者类别：" + strReaderType + "\n"
+                + "注释：" + strComment;
+
+
+            return strText;
+        }
+
+        /// <summary>
+        /// 得到的读者的联系方式
+        /// </summary>
+        /// <param name="dom"></param>
+        /// <returns></returns>
+        private string GetContactString(XmlDocument dom)
+        {
+            string strTel = DomUtil.GetElementText(dom.DocumentElement, "tel");
+            string strEmail = DomUtil.GetElementText(dom.DocumentElement, "email");
+            string strAddress = DomUtil.GetElementText(dom.DocumentElement, "address");
+            List<string> list = new List<string>();
+            if (string.IsNullOrEmpty(strTel) == false)
+                list.Add(strTel);
+            if (string.IsNullOrEmpty(strEmail) == false)
+            {
+                strEmail = JoinEmail(strEmail, "");
+                list.Add(strEmail);
+            }
+            if (string.IsNullOrEmpty(strAddress) == false)
+                list.Add(strAddress);
+            return StringUtil.MakePathList(list, "; ");
+        }
 
         #endregion
 
