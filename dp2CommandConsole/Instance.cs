@@ -9,6 +9,7 @@ using System.Net;
 using DigitalPlatform.IO;
 using dp2Command.Server;
 using dp2Command.Server.Command;
+using dp2Command.Server.dp2RestfulApi;
 
 namespace dp2ConsoleToWeiXin
 {
@@ -233,8 +234,13 @@ namespace dp2ConsoleToWeiXin
 
             }
 
-            if (strCommand == "myinfo")
+            // 个人信息
+            if (strCommand == dp2CommandUtility.C_Command_MyInfo)
             { 
+                // 设置当前命令
+                this.WeiXinServer.CurrentCmdName = strCommand;
+
+
                 string strMyInfo="";
                 int nRet = this.WeiXinServer.GetMyInfo(this.WeiXinId, out strMyInfo,
                     out strError);
@@ -247,13 +253,83 @@ namespace dp2ConsoleToWeiXin
                 // 尚未绑定读者账号
                 if (nRet == 0)
                 {
-                    Console.WriteLine("尚未绑定读者账号，请调Binding命令先绑定");
+                    Console.WriteLine("尚未绑定读者账号，请先调Binding命令先绑定");
                     return false;
                 }
 
                 // 显示个人信息
                 Console.WriteLine(strMyInfo);
                 return false;
+            }
+
+
+
+            // 借书信息
+            if (strCommand == dp2CommandUtility.C_Command_BorrowInfo)
+            {
+                // 设置当前命令
+                this.WeiXinServer.CurrentCmdName = strCommand;
+
+                string strBorrowInfo = "";
+                int nRet = this.WeiXinServer.GetBorrowInfo(this.WeiXinId, out strBorrowInfo,
+                    out strError);
+                if (nRet == -1)
+                {
+                    Console.WriteLine(strError);
+                    return false;
+                }
+                // 尚未绑定读者账号
+                if (nRet == 0)
+                {
+                    Console.WriteLine("尚未绑定读者账号，请先调Binding命令先绑定");
+                    return false;
+                }
+
+                // 显示个人信息
+                Console.WriteLine(strBorrowInfo);
+                return false;
+            }
+
+            // 续借
+            if (strCommand == dp2CommandUtility.C_Command_Renew)
+            {
+                // 设置当前命令
+                this.WeiXinServer.CurrentCmdName = strCommand;
+
+                if (strParam=="")
+                {
+                    Console.WriteLine("请输入续借图书编号或者册条码号");
+                    return false;
+                }
+
+                // view状态todo
+
+                // 认作册条码
+                BorrowInfo borrowInfo = null;
+                int nRet = this.WeiXinServer.Renew(this.WeiXinId,
+                    strParam,
+                    out borrowInfo,
+                    out strError);
+                if (nRet == -1)
+                {
+                    Console.WriteLine(strError);
+                    return false;
+                }
+                if (nRet == 0)
+                {
+                    Console.WriteLine("尚未绑定读者账号，请先调Binding命令先绑定");
+                    return false;
+                }
+
+                // 显示续借成功信息信息
+                if (lRet == 1)
+                {
+                    string returnTime = DateTimeUtil.ToLocalTime(borrowInfo.LatestReturnTime, "yyyy/MM/dd");
+                    string strText = strParam + "续借成功,还书日期为：" + returnTime + "。";
+                    Console.WriteLine(strText);
+                    return false;
+                }
+                
             }
              
 

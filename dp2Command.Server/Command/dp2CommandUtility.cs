@@ -33,6 +33,7 @@ namespace dp2Command.Server
                 || strText == C_Command_Unbinding
                 || strText == C_Command_MyInfo
                 || strText == C_Command_BorrowInfo
+                || strText == C_Command_Renew
                 || strText == C_Command_BookRecommend
                 || strText == C_Command_Notice)
             {

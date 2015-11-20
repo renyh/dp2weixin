@@ -469,7 +469,7 @@ namespace dp2Command.Server.dp2RestfulApi
         /// <para>-1:   出错</para>
         /// <para>0:    操作成功</para>/// 
         /// </returns>
-        public long Renew(
+        public int Renew(
             string strReaderBarcode,
             string strItemBarcode,
             out BorrowInfo borrow_info,
@@ -534,7 +534,7 @@ namespace dp2Command.Server.dp2RestfulApi
                 strError = response.BorrowResult.ErrorInfo;
                 this.ErrorCode = response.BorrowResult.ErrorCode;
                 this.ClearRedoCount();
-                return response.BorrowResult.Value;
+                return (int)response.BorrowResult.Value;
             }
             catch (Exception ex)
             {

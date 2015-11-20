@@ -521,6 +521,78 @@ namespace dp2Command.Server
         #region 我的空间
 
         /// <summary>
+        /// 续借
+        /// </summary>
+        /// <param name="strItemBarcode">册条码号</param>
+        /// <returns></returns>
+        public int  Renew(string weixinId,string strItemBarcode,out BorrowInfo borrowInfo,out string strError)
+        {
+            borrowInfo = null;
+            strError = "";
+
+            if (strItemBarcode == null)
+                strItemBarcode = "";
+            strItemBarcode = strItemBarcode.Trim();
+
+            // 根据openid检索绑定的读者
+            string strRecPath = "";
+            string strXml = "";
+            long lRet = this.SearchReaderByOpenId(weixinId, out strRecPath,
+                out strXml,
+                out strError);
+            if (lRet == -1)
+                return -1;
+            // 未绑定
+            if (lRet == 0)
+            {
+                strError = "尚未绑定读者账号";
+                return 0;
+            }
+
+            if (strItemBarcode == "")
+            {
+                strError = "续借失败：您输入的续借图书编号或者册条码号为空。";
+                return -1;
+            }
+
+            if (String.IsNullOrEmpty(this.ReaderBarcode )==true)
+            {
+                strError = "续借失败：内部错误，读者证条码号为空。";
+                return -1;
+            }
+
+            /*
+            // 优先从序号字典中找下
+            if (this.CurrentMessageContext.BorrowDict.ContainsKey(strItemBarcode))
+            {
+                string temp = this.CurrentMessageContext.BorrowDict[strItemBarcode];
+                if (temp != null && temp != "")
+                    strItemBarcode = temp;
+            }
+            */
+
+            LibraryChannel channel = this.ChannelPool.GetChannel(this.dp2Url, this.dp2UserName);
+            channel.Password = this.dp2Password;
+            try
+            {
+                lRet = channel.Renew(this.ReaderBarcode,
+                    strItemBarcode,
+                    out borrowInfo,
+                    out strError);
+                if (lRet == -1)
+                    return -1;
+
+                return 1;
+
+            }
+            finally
+            {
+                this.ChannelPool.ReturnChannel(channel);
+            }
+
+        }
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="openid"></param>
@@ -559,47 +631,14 @@ namespace dp2Command.Server
                 return -1;
             }
 
-            LibraryChannel channel = this.ChannelPool.GetChannel(this.dp2Url, this.dp2UserName);
-            channel.Password = this.dp2Password;
-            try
-            {
-                // 对于已绑定的用户，取出Barcode，用于续借
-                XmlDocument dom = new XmlDocument();
-                dom.LoadXml(strXml);
-                XmlNode barcodeNode = dom.SelectSingleNode("/root/barcode");
+            // 得到高级xml
+            lRet = this.GetReaderAdvanceXml(strRecPath, out strXml,
+                out strError);
+            if (lRet == -1)
+                return -1;
 
-                //todo??这里还需要赋值吗？
-                this.ReaderBarcode = barcodeNode.InnerText;
-
-                // 先根据barcode检索出来,得到原记录与时间戳
-                GetReaderInfoResponse response = channel.GetReaderInfo("@path:" + strRecPath,
-                    "advancexml,advancexml_borrow_bibliosummary,advancexml_overdue_bibliosummary");
-                if (response.GetReaderInfoResult.Value != 1)
-                {
-                    strError = "根据读者证条码号得到读者记录异常：" + response.GetReaderInfoResult.ErrorInfo;
-                    return -1;
-                }
-                string strTimestamp = StringUtil.GetHexTimeStampString(response.baTimestamp);
-                strXml = response.results[0];
-
-                dom = new XmlDocument();
-                dom.LoadXml(strXml);
-                strMyInfo = this.GetReaderInfoMessage(dom);
-                return 1;
-            }
-            finally
-            {
-                this.ChannelPool.ReturnChannel(channel);
-            }
-        }
-
-        /// <summary>
-        /// 输出个人信息
-        /// </summary>
-        /// <param name="dom"></param>
-        /// <returns></returns>
-        private string GetReaderInfoMessage(XmlDocument dom)
-        {
+            XmlDocument dom = new XmlDocument();
+            dom.LoadXml(strXml);
             string strReaderBarcode = DomUtil.GetElementText(dom.DocumentElement, "barcode");
             string strName = DomUtil.GetElementText(dom.DocumentElement, "name");
             string strDepartment = DomUtil.GetElementText(dom.DocumentElement, "department");
@@ -613,7 +652,7 @@ namespace dp2Command.Server
             string strComment = DomUtil.GetElementText(dom.DocumentElement,
                 "comment");
 
-            string strText ="个人信息"+"\n"
+            strMyInfo = "个人信息" + "\n"
                 + "姓名：" + strName + "\n"
                 + "证条码号：" + strReaderBarcode + "\n"
                 + "部门：" + strDepartment + "\n"
@@ -622,10 +661,161 @@ namespace dp2Command.Server
                 + "有效期：" + strCreateDate + "~" + strExpireDate + "\n"
                 + "读者类别：" + strReaderType + "\n"
                 + "注释：" + strComment;
+            return 1;
 
-
-            return strText;
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="openid"></param>
+        /// <param name="strMyInfo"></param>
+        /// <param name="strError"></param>
+        /// <returns>
+        /// -1  出错
+        /// 0   未绑定
+        /// 1   成功
+        /// </returns>
+        public int GetBorrowInfo(string openid, out string strBorrowInfo, out string strError)
+        {
+            strError = "";
+            strBorrowInfo = "";
+
+            // 根据openid检索绑定的读者
+            string strRecPath = "";
+            string strXml = "";
+            long lRet = this.SearchReaderByOpenId(openid, out strRecPath,
+                out strXml,
+                out strError);
+            if (lRet == -1)
+                return -1;
+
+            // 未绑定
+            if (lRet == 0)
+            {
+                strError = "尚未绑定读者账号";
+                return 0;
+            }
+
+            // 异常，这里不可能不定1
+            if (lRet != 1)
+            {
+                strError = "SearchReaderByOpenId()函数返回值" + lRet + "异常";
+                return -1;
+            }
+
+            // 得到高级xml
+            lRet = this.GetReaderAdvanceXml(strRecPath, out strXml,
+                out strError);
+            if (lRet == -1)
+                return -1;
+
+           // 提取借书信息
+            lRet = this.GetBorrowsInfoInternal(strXml, out strBorrowInfo);
+            if (lRet == -1)
+                return -1;
+
+
+            return 1;
+
+        }
+
+
+        int GetBorrowsInfoInternal(string strXml, out string strBorrowInfo)
+        {
+            strBorrowInfo = "";
+
+            XmlDocument dom = new XmlDocument();
+            dom.LoadXml(strXml);
+            XmlNodeList nodes = dom.DocumentElement.SelectNodes("borrows/borrow");
+            if (nodes.Count == 0)
+            {
+                strBorrowInfo= "无借阅记录";
+                return 0;
+            }            
+
+            Dictionary<string, string> borrowLit = new Dictionary<string, string>();
+
+            int index = 1;
+            foreach (XmlElement borrow in nodes)
+            {
+                if (strBorrowInfo != "")
+                    strBorrowInfo += "===============\n";
+
+                string overdueText = "";
+                string strIsOverdue = DomUtil.GetAttr(borrow, "isOverdue");
+                if (strIsOverdue == "yes")
+                    overdueText = DomUtil.GetAttr(borrow, "overdueInfo1");
+                else
+                    overdueText = "未超期";
+
+
+                string itemBarcode = DomUtil.GetAttr(borrow, "barcode");
+                borrowLit[index.ToString()] = itemBarcode; // 设到字典点，已变续借
+
+
+                string bookName = DomUtil.GetAttr(borrow, "summary");//borrow.GetAttribute("summary")
+                int tempIndex = bookName.IndexOf('/');
+                if (tempIndex > 0)
+                {
+                    bookName = bookName.Substring(0, tempIndex);
+                }
+
+                strBorrowInfo += "编号：" + index.ToString() + "\n"
+                    + "册条码号：" + itemBarcode + "\n"
+                    + "书       名：" + bookName + "\n"
+                    + "借阅时间：" + DateTimeUtil.ToLocalTime(borrow.GetAttribute("borrowDate"), "yyyy-MM-dd HH:mm") + "\n"
+                    + "借       期：" + DateTimeUtil.GetDisplayTimePeriodString(borrow.GetAttribute("borrowPeriod")) + "\n"
+                    + "应还时间：" + DateTimeUtil.ToLocalTime(borrow.GetAttribute("returningDate"), "yyyy-MM-dd") + "\n"
+                    + "是否超期：" + overdueText+"\n";
+
+
+                index++; //编号+1
+            }
+
+            // 设到用户上下文
+            //this.CurrentMessageContext.BorrowDict = borrowLit;
+
+            return nodes.Count;
+
+        }
+
+
+        /// <summary>
+        /// 获取读者Advance Xml
+        /// </summary>
+        /// <param name="strRecPath"></param>
+        /// <param name="strXml"></param>
+        /// <param name="strError"></param>
+        /// <returns></returns>
+        private int GetReaderAdvanceXml(string strRecPath, out string strXml, out string strError) 
+        {
+            strXml = "";
+            strError = "";
+
+            LibraryChannel channel = this.ChannelPool.GetChannel(this.dp2Url, this.dp2UserName);
+            channel.Password = this.dp2Password;
+            try
+            {
+                // 先根据barcode检索出来,得到原记录与时间戳
+                GetReaderInfoResponse response = channel.GetReaderInfo("@path:" + strRecPath,
+                    "advancexml,advancexml_borrow_bibliosummary,advancexml_overdue_bibliosummary");
+                if (response.GetReaderInfoResult.Value != 1)
+                {
+                    strError = "根据读者证条码号得到读者记录异常：" + response.GetReaderInfoResult.ErrorInfo;
+                    return -1;
+                }
+                string strTimestamp = StringUtil.GetHexTimeStampString(response.baTimestamp);
+                strXml = response.results[0];
+                return 1;
+            }
+            finally
+            {
+                this.ChannelPool.ReturnChannel(channel);
+            }
+        }
+
+
 
         /// <summary>
         /// 得到的读者的联系方式
