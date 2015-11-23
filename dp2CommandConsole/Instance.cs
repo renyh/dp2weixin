@@ -123,7 +123,7 @@ namespace dp2ConsoleToWeiXin
             // 解除绑定
             if (strCommand == dp2CommandUtility.C_Command_Unbinding)
             {
-                return this.Unbinding();
+                return this.DoUnbinding();
             }
 
             //=========================
@@ -158,7 +158,6 @@ namespace dp2ConsoleToWeiXin
         /// <returns></returns>
         private bool DoBinding(string strParam)
         {
-
             // 设置当前命令
             this.CurrentCmdName = dp2CommandUtility.C_Command_Binding;
 
@@ -204,18 +203,16 @@ namespace dp2ConsoleToWeiXin
             if (lRet == -1 || lRet == 0)
             {
                 Console.WriteLine(strError);
-            }
-            else if (lRet == 1)
-            {
-                // 把用户名与密码清掉，以便再绑其它账号
-                bindingCmd.ReaderBarcode = "";
-                bindingCmd.Password = "";
-
-                // 设到当前读者变量上
-                this.ReaderBarcode = strReaderBarcode;
-                Console.WriteLine("绑定成功!");
+                return false;
             }
 
+            // 把用户名与密码清掉，以便再绑其它账号
+            bindingCmd.ReaderBarcode = "";
+            bindingCmd.Password = "";
+
+            // 设到当前读者变量上
+            this.ReaderBarcode = strReaderBarcode;
+            Console.WriteLine("绑定成功!");
             return false;
         }
 
@@ -223,15 +220,16 @@ namespace dp2ConsoleToWeiXin
         /// 解绑
         /// </summary>
         /// <returns></returns>
-        private bool Unbinding()
+        private bool DoUnbinding()
         {
             // 设置当前命令
             this.CurrentCmdName = "";
+
             long lRet = 0;
             string strError = "";
 
             // 先检查有无绑定读者账号
-            lRet = this.CheckIsBinding(this.WeiXinId, out strError);
+            lRet = this.CheckIsBinding(out strError);
             if (lRet == -1)
             {
                 Console.WriteLine(strError);
@@ -264,13 +262,14 @@ namespace dp2ConsoleToWeiXin
         /// <returns></returns>
         private bool DoMyInfo()
         {
-            // 置空当前命令
+            // 置空当前命令，该命令不需要保存状态
             this.CurrentCmdName = "";
+
             long lRet = 0;
             string strError = "";
 
             // 先检查有无绑定读者账号
-            lRet = this.CheckIsBinding(this.WeiXinId, out strError);
+            lRet = this.CheckIsBinding(out strError);
             if (lRet == -1)
             {
                 Console.WriteLine(strError);
@@ -287,7 +286,7 @@ namespace dp2ConsoleToWeiXin
             string strMyInfo = "";
             lRet = this.WeiXinServer.GetMyInfo1(this.ReaderBarcode, out strMyInfo,
                 out strError);
-            if (lRet == -1)
+            if (lRet == -1 || lRet == 0)
             {
                 Console.WriteLine(strError);
                 return false;
@@ -310,7 +309,7 @@ namespace dp2ConsoleToWeiXin
 
 
             // 先检查是否绑定读者账号
-            lRet = this.CheckIsBinding(this.WeiXinId, out strError);
+            lRet = this.CheckIsBinding(out strError);
             if (lRet == -1)
             {
                 Console.WriteLine(strError);
@@ -350,7 +349,7 @@ namespace dp2ConsoleToWeiXin
             string strError = "";
 
             // 先检查是否绑定读者账号
-            lRet = this.CheckIsBinding(this.WeiXinId, out strError);
+            lRet = this.CheckIsBinding(out strError);
             if (lRet == -1)
             {
                 Console.WriteLine(strError);
@@ -497,7 +496,7 @@ namespace dp2ConsoleToWeiXin
         /// <param name="strXml"></param>
         /// <param name="strError"></param>
         /// <returns></returns>
-        private int CheckIsBinding(string strWeiXinId,  out string strError)
+        private int CheckIsBinding(out string strError)
         {
             strError = "";
 
@@ -506,7 +505,7 @@ namespace dp2ConsoleToWeiXin
                 // 根据openid检索绑定的读者
                 string strRecPath = "";
                 string strXml = "";
-                long lRet = this.WeiXinServer.SearchReaderByWeiXinId(strWeiXinId, out strRecPath,
+                long lRet = this.WeiXinServer.SearchReaderByWeiXinId(this.WeiXinId, out strRecPath,
                     out strXml,
                     out strError);
                 if (lRet == -1)

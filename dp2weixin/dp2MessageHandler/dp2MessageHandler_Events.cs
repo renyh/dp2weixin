@@ -16,6 +16,76 @@ namespace dp2weixin
     public partial class dp2MessageHandler : MessageHandler<dp2MessageContext>
     {
         /// <summary>
+        /// 订阅（关注）事件
+        /// </summary>
+        /// <returns></returns>
+        public override IResponseMessageBase OnEvent_SubscribeRequest(RequestMessageEvent_Subscribe requestMessage)
+        {
+            string strMessage = "您好，欢迎关注！您可以回复：\n"
+               + "search:检索" + "\n"
+               + "binding:绑定读者账号" + "\n"
+               + "unbinding:解除绑定" + "\n"
+               + "myinfo:个人信息" + "\n"
+               + "borrowinfo:借阅信息" + "\n"
+               + "renew:续借" + "\n"
+               + "bookrecommend:新书推荐" + "\n"
+               + "notice:最新公告";
+            return this.CreateTextResponseMessage(strMessage);
+        }
+
+        /// <summary>
+        /// 自定义菜单点击事件
+        /// </summary>
+        /// <returns></returns>
+        public override IResponseMessageBase OnEvent_ClickRequest(RequestMessageEvent_Click requestMessage)
+        {
+            //菜单点击，需要跟创建菜单时的Key匹配
+            // 注意这里为了与命令常量一致，都转成小写了
+            string strEventKey = requestMessage.EventKey.ToLower();
+            switch (strEventKey) 
+            {
+                case dp2CommandUtility.C_Command_Search: //"Search":
+                    {
+                        return this.DoSearch("");
+                    }
+                case dp2CommandUtility.C_Command_Binding://"Binding":
+                    {
+                        return this.DoBinding("");
+                    }
+                case dp2CommandUtility.C_Command_Unbinding://"Unbinding":
+                    {
+                        return this.DoUnbinding();
+                    }
+                case dp2CommandUtility.C_Command_MyInfo://"MyInfo":
+                    {
+                        return this.DoMyInfo();
+                    }
+                case dp2CommandUtility.C_Command_BorrowInfo:// "BorrowInfo":
+                    {
+                        return DoBorrowInfo();
+                    }
+                case dp2CommandUtility.C_Command_Renew:// "Renew":
+                    {
+                        return DoRenew("");
+                    }
+                case dp2CommandUtility.C_Command_BookRecommend://"BookRecommend":
+                    {
+                        return this.DoNewBooks();
+                    }
+                case dp2CommandUtility.C_Command_Notice:
+                    {
+                        return this.DoNotice();
+                    }
+                default:
+                    {
+                        return this.CreateTextResponseMessage("未知的命令:" + requestMessage.EventKey);
+                    }
+            }
+        }
+
+        #region 其它用户事件消息
+
+        /// <summary>
         /// 微信客户端（通过微信服务器）自动发送过来的位置信息事件
         /// </summary>
         /// <param name="requestMessage"></param>
@@ -24,18 +94,7 @@ namespace dp2weixin
         {
             var responseMessage = CreateResponseMessage<ResponseMessageText>();
             responseMessage.Content = "这里写什么都无所谓，比如：上帝爱你！";
-            return responseMessage;//这里也可以返回null（需要注意写日志时候null的问题）
-        }
-        /// <summary>
-        /// 订阅（关注）事件
-        /// </summary>
-        /// <returns></returns>
-        public override IResponseMessageBase OnEvent_SubscribeRequest(RequestMessageEvent_Subscribe requestMessage)
-        {
-            var responseMessage = CreateResponseMessage<ResponseMessageText>();
-            responseMessage.Content = @"您可以发送【文字】【位置】【图片】【语音】等不同类型的信息，查看不同格式的回复。
-                     您也可以直接点击菜单查看各种类型的回复。"; 
-            return responseMessage; 
+            return responseMessage;
         }
         /// <summary>
         /// 退订;
@@ -49,83 +108,6 @@ namespace dp2weixin
             responseMessage.Content = "有空再来";
             return responseMessage;
         }
-        /// <summary>
-        /// 自定义菜单点击事件
-        /// </summary>
-        /// <returns></returns>
-        public override IResponseMessageBase OnEvent_ClickRequest(RequestMessageEvent_Click requestMessage)
-        {
-            try
-            {
-                IResponseMessageBase reponseMessage = null;
-                //菜单点击，需要跟创建菜单时的Key匹配
-                switch (requestMessage.EventKey.ToLower()) // 注意这里为了与命令一致，都转成小写了
-                {
-                    case dp2CommandUtility.C_Command_Search: //"Search":
-                        {
-                            reponseMessage = WaitForSearchWordMessage();
-                            break;
-                        }
-                    case dp2CommandUtility.C_Command_BookRecommend://"BookRecommend":
-                        {
-                            reponseMessage = this.ReplyNewBooks();
-                            break;
-                        }
-                    case dp2CommandUtility.C_Command_Notice:
-                        {
-                            reponseMessage = this.ReplyNotice();
-                            break;
-                        }
-                    case dp2CommandUtility.C_Command_Binding://"Binding":
-                        {
-                            //绑定
-                            this.CurrentMessageContext.CurrentAction = dp2CommandUtility.C_Command_Binding;
-                            reponseMessage = this.ReplyMyMessage(requestMessage.FromUserName);
-                            break;
-                        }
-                    case dp2CommandUtility.C_Command_Unbinding://"Unbinding":
-                        {
-                            // 检索一下有无绑定，如果没有提示"您尚未绑定"，如果绑定提示"解除绑定成功"
-                            reponseMessage = this.ReplyUnbindingMessage(requestMessage.FromUserName);
-                            break;
-                        }
-                    case dp2CommandUtility.C_Command_MyInfo://"MyInfo":
-                        {
-                            this.CurrentMessageContext.CurrentAction = dp2CommandUtility.C_Command_MyInfo;
-                            reponseMessage = this.ReplyMyMessage(requestMessage.FromUserName);
-                            break;
-
-                        }
-                    case dp2CommandUtility.C_Command_BorrowInfo:// "BorrowInfo":
-                        {
-                            this.CurrentMessageContext.CurrentAction = dp2CommandUtility.C_Command_BorrowInfo;
-                            reponseMessage = this.ReplyMyMessage(requestMessage.FromUserName);
-                            break;
-                        }
-                    case dp2CommandUtility.C_Command_Renew:// "Renew":
-                        {
-                            this.CurrentMessageContext.CurrentAction = dp2CommandUtility.C_Command_Renew;
-                            reponseMessage = this.ReplyMyMessage(requestMessage.FromUserName);
-                            break;
-                        }
-                    default:
-                        {
-                            var textResponseMessage = CreateResponseMessage<ResponseMessageText>();
-                            textResponseMessage.Content = "您点击了" + requestMessage.EventKey + ",此功能正在开发中...";
-                            reponseMessage = textResponseMessage;
-                            break;
-                        }
-                }
-                return reponseMessage;
-            }
-            catch (Exception ex)
-            {
-                var responseMessage = CreateResponseMessage<ResponseMessageText>();
-                responseMessage.Content = "抛出异常：" + ex.Message;
-                return responseMessage;
-            }
-        }
-
 
         /// <summary>
         /// 扫描带参数二维码事件
@@ -139,5 +121,7 @@ namespace dp2weixin
             responseMessage.Content = "感谢扫码";
             return responseMessage;
         }
+
+        #endregion
     }
 }

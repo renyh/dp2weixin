@@ -68,18 +68,18 @@ namespace dp2weixin
                 //自定义MessageHandler，对微信请求的详细判断操作都在这里面。
                 var messageHandler = new dp2MessageHandler(Global.GlobalWeiXinServer,
                     Request.InputStream, postModel, maxRecordCount);
-                messageHandler.ServerBaseUrl = Server.MapPath("~");
+                messageHandler.dp2WeiXinAppDir = Server.MapPath("~");
 
                 try
                 {
                     //测试时可开启此记录，帮助跟踪数据
-                    //dp2MessageHandler.WriteErrorLog(messageHandler.RequestDocument.ToString());
+                    //Global.GlobalWeiXinServer.WriteErrorLog(messageHandler.RequestDocument.ToString());
                     
                     //执行微信处理过程
                     messageHandler.Execute();                    
 
                     //测试时可开启，帮助跟踪数据
-                    //dp2MessageHandler.WriteErrorLog(messageHandler.ResponseDocument.ToString());
+                    //Global.GlobalWeiXinServer.WriteErrorLog(messageHandler.ResponseDocument.ToString());
 
                     // 返回给微信服务器
                     WriteContent(messageHandler.ResponseDocument.ToString());
@@ -89,10 +89,10 @@ namespace dp2weixin
                 catch (Exception ex)
                 {                    
                     //将程序运行中发生的错误记录到日志
-                    messageHandler.WriteErrorLog(LibraryChannel.GetExceptionMessage(ex));
+                    Global.GlobalWeiXinServer.WriteErrorLog(LibraryChannel.GetExceptionMessage(ex));
                     if (messageHandler.ResponseDocument != null)
                     {
-                        messageHandler.WriteErrorLog(messageHandler.ResponseDocument.ToString());
+                        Global.GlobalWeiXinServer.WriteErrorLog(messageHandler.ResponseDocument.ToString());
                     }
 
                     // 返回给微信服务器为空内容

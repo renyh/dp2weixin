@@ -1,4 +1,5 @@
-﻿using DigitalPlatform.IO;
+﻿using DigitalPlatform;
+using DigitalPlatform.IO;
 using DigitalPlatform.Text;
 using DigitalPlatform.Xml;
 using dp2Command.Server.dp2RestfulApi;
@@ -20,9 +21,10 @@ namespace dp2Command.Server
         public string dp2UserName = "";//"weixin";
         public string dp2Password = "";//"111111";
 
-        // dp2weixin url
+        // dp2weixin 
         public string dp2WeiXinUrl = "http://dp2003.com/dp2weixin";
         public string dp2WeiXinLogDir = "";
+        
 
         // dp2通道池
         public LibraryChannelPool ChannelPool = null;
@@ -867,6 +869,43 @@ namespace dp2Command.Server
             stream.Close();
 
             return xmlString;
+        }
+
+        #endregion
+
+
+        #region 错误日志
+
+        /// <summary>
+        /// 日志锁
+        /// </summary>
+        static object logSyncRoot = new object();
+
+        /// <summary>
+        /// 写错误日志
+        /// </summary>
+        /// <param name="strText"></param>
+        public void WriteErrorLog(string strText)
+        {
+            try
+            {
+                lock (logSyncRoot)
+                {
+                    DateTime now = DateTime.Now;
+                    // 每天一个日志文件
+                    string strFilename = PathUtil.MergePath(this.dp2WeiXinLogDir, "log_" + DateTimeUtil.DateTimeToString8(now) + ".txt");
+                    string strTime = now.ToString();
+                    StreamUtil.WriteText(strFilename,
+                        strTime + " " + strText + "\r\n");
+                }
+            }
+            catch (Exception ex)
+            {
+                EventLog Log = new EventLog();
+                Log.Source = "dp2opac";
+                Log.WriteEntry("因为原本要写入日志文件的操作发生异常， 所以不得不改为写入Windows系统日志(见后一条)。异常信息如下：'" + ExceptionUtil.GetDebugText(ex) + "'", EventLogEntryType.Error);
+                Log.WriteEntry(strText, EventLogEntryType.Error);
+            }
         }
 
         #endregion

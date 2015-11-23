@@ -27,6 +27,9 @@ namespace dp2weixin
         public dp2MessageContext()
         {
             base.MessageContextRemoved += CustomMessageContext_MessageContextRemoved;
+
+            // 初始命令集合，目前只存放三个有状态的命令：search,binding,renew
+            this.CmdContiner = new CommandContainer();
         }
 
         /// <summary>
