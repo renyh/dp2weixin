@@ -30,9 +30,6 @@ namespace dp2Command.Server
         public LibraryChannelPool ChannelPool = null;
 
 
-
-
-
         /// <summary>
         /// 构造函数
         /// </summary>
