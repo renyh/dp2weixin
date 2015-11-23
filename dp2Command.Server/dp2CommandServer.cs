@@ -56,8 +56,6 @@ namespace dp2Command.Server
             ChannelPool.BeforeLogin -= new BeforeLoginEventHandle(Channel_BeforeLogin);
             ChannelPool.BeforeLogin += new BeforeLoginEventHandle(Channel_BeforeLogin);
 
-            //命令集合
-            //this.CmdContiner = new CommandContainer();
         }
 
 
@@ -161,6 +159,7 @@ namespace dp2Command.Server
                //searchCommand searchCmd = (SearchCommand)this.CmdContiner.GetCommand(dp2CommandUtility.C_Command_Search);
                 searchCmd.BiblioResultPathList = totalResultList;
                 searchCmd.ResultNextStart = 0;
+                searchCmd.IsCanNextPage = true;
 
                 // 获得第一页检索结果
                 bool bRet = searchCmd.GetNextPage(out strFirstPage, out strError);
@@ -178,32 +177,6 @@ namespace dp2Command.Server
             return lTotoalCount;
         }
 
-        /*
-        /// <summary>
-        /// 得到下页检索结果
-        /// </summary>
-        /// <returns></returns>
-        public string GetNextPageForSearch(searchCommand searchCmd)
-        {
-            string strResult = "";
-
-            SearchCommand searchCmd = (SearchCommand)this.CmdContiner.GetCommand(dp2CommandUtility.C_Command_Search);
-            if (searchCmd.IsCanNextPage == false)
-            {
-                strResult = "已到末页。";
-                return strResult;
-            }
-            // 获得下页检索结果
-            string strError = "";
-            bool bRet = searchCmd.GetNextPage(out strResult, out strError);
-            if (bRet == false)
-            {
-                return strError;
-            }
-
-            return strResult;
-        }
-         */
 
         /// <summary>
         /// 根据书目序号得到详细的参考信息
