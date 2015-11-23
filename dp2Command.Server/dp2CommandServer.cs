@@ -323,6 +323,8 @@ namespace dp2Command.Server
                         readerDom.DocumentElement.AppendChild(emailNode);
                     }
 
+
+
                     emailNode.InnerText = JoinEmail(emailNode.InnerText, weiXinId);
                     string strNewXml = ConvertXmlToString(readerDom);
 
@@ -337,8 +339,8 @@ namespace dp2Command.Server
                         return -1;
                     }
 
-                    // 绑定成功，把读者证条码记下来，用于续借 2015/11/7
-                    this.ReaderBarcode = strBarcode;
+                    // 绑定成功，把读者证条码记下来，用于续借 2015/11/7，不要用strbarcode变量，因为可能做的大小写转换
+                    this.ReaderBarcode= DomUtil.GetNodeText(readerDom.DocumentElement.SelectSingleNode("barcode"));                    
                     return 1;
 
                 }
@@ -352,7 +354,7 @@ namespace dp2Command.Server
             }
         }
 
-        private long SearchReaderByOpenId(string weiXinId, out string strRecPath, out string strXml,
+        public long SearchReaderByOpenId(string weiXinId, out string strRecPath, out string strXml,
             out string strError)
         {
             strError = "";

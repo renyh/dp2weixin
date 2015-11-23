@@ -57,6 +57,10 @@
       <Project>{26f96cc3-a4a9-4bc4-a10a-bc7e25581ff6}</Project>
       <Name>DigitalPlatform.Text</Name>
     </ProjectReference>
+    <ProjectReference Include="..\DigitalPlatform.Xml\DigitalPlatform.Xml.csproj">
+      <Project>{e6489e89-1349-4ee7-a00b-ac96b9912587}</Project>
+      <Name>DigitalPlatform.Xml</Name>
+    </ProjectReference>
     <ProjectReference Include="..\dp2Command.Server\dp2Command.Server.csproj">
       <Project>{a77b8a4a-3ae8-4bd7-b09a-bf8d92fe802d}</Project>
       <Name>dp2Command.Server</Name>

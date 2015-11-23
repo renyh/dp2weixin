@@ -10,6 +10,8 @@ using DigitalPlatform.IO;
 using dp2Command.Server;
 using dp2Command.Server.Command;
 using dp2Command.Server.dp2RestfulApi;
+using System.Xml;
+using DigitalPlatform.Xml;
 
 namespace dp2ConsoleToWeiXin
 {
@@ -52,13 +54,14 @@ namespace dp2ConsoleToWeiXin
         //      true    退出命令
         public bool ProcessCommand(string line)
         {
-            line = line.Trim().ToLower();
+            //line = line.Trim().ToLower();
 
             if (line == "exit" || line == "quit")
                 return true;
 
             string strError = "";
             long lRet = 0;
+            int nRet = 0;
 
 
             // 用空隔号分隔命令与参数，例如：
@@ -142,7 +145,7 @@ namespace dp2ConsoleToWeiXin
                 if (nBiblioIndex>=1)
                 {
                     string strBiblioInfo = "";
-                    int nRet = this.WeiXinServer.GetDetailBiblioInfo(nBiblioIndex,
+                    nRet = this.WeiXinServer.GetDetailBiblioInfo(nBiblioIndex,
                         out strBiblioInfo,
                         out strError);
                     if (nRet == -1)
@@ -197,7 +200,7 @@ namespace dp2ConsoleToWeiXin
                     }
                 }
 
-                int nRet = this.WeiXinServer.Binding(bindingCmd.ReaderBarcode,
+                nRet = this.WeiXinServer.Binding(bindingCmd.ReaderBarcode,
                     bindingCmd.Password, 
                     this.WeiXinId, 
                     out strError);
@@ -222,7 +225,7 @@ namespace dp2ConsoleToWeiXin
                 // 设置当前命令
                 this.WeiXinServer.CurrentCmdName = strCommand;
 
-                int nRet = this.WeiXinServer.Unbinding(this.WeiXinId, out strError);
+                nRet = this.WeiXinServer.Unbinding(this.WeiXinId, out strError);
                 if (nRet == -1 || nRet == 0)
                 {
                     Console.WriteLine(strError);
@@ -242,7 +245,7 @@ namespace dp2ConsoleToWeiXin
 
 
                 string strMyInfo="";
-                int nRet = this.WeiXinServer.GetMyInfo(this.WeiXinId, out strMyInfo,
+                nRet = this.WeiXinServer.GetMyInfo(this.WeiXinId, out strMyInfo,
                     out strError);
                 if (nRet == -1)
                 {
@@ -271,10 +274,10 @@ namespace dp2ConsoleToWeiXin
                 this.WeiXinServer.CurrentCmdName = strCommand;
 
                 string strBorrowInfo = "";
-                int nRet = this.WeiXinServer.GetBorrowInfo(this.WeiXinId, out strBorrowInfo,
+                nRet = this.WeiXinServer.GetBorrowInfo(this.WeiXinId, out strBorrowInfo,
                     out strError);
                 if (nRet == -1)
-                {
+                {                    
                     Console.WriteLine(strError);
                     return false;
                 }
@@ -302,11 +305,62 @@ namespace dp2ConsoleToWeiXin
                     return false;
                 }
 
-                // view状态todo
+                //如果内存中，没有ReaderBarCode,则先检查一下是否绑定的账号
+                if (this.WeiXinServer.ReaderBarcode == "")
+                {
+                    // 根据openid检索绑定的读者
+                    string strRecPath = "";
+                    string strXml = "";
+                    lRet = this.WeiXinServer.SearchReaderByOpenId(this.WeiXinId, out strRecPath,
+                        out strXml,
+                        out strError);
+                    if (lRet == -1)
+                    {
+                        Console.WriteLine(strError);
+                        return false;
+                    }
+
+                    // 未绑定
+                    if (lRet == 0)
+                    {
+                        Console.WriteLine("尚未绑定读者账号，请先调Binding命令先绑定");
+                        return false;
+                    }
+
+                    XmlDocument dom = new XmlDocument();
+                    dom.LoadXml(strXml);
+                    this.WeiXinServer.ReaderBarcode = DomUtil.GetNodeText(dom.DocumentElement.SelectSingleNode("barcode"));
+
+
+                }
+
+                // view 查看已借图片
+                if (strParam == "view")
+                {
+                    string strBorrowInfo = "";
+                    nRet = this.WeiXinServer.GetBorrowInfo(this.WeiXinId, out strBorrowInfo,
+                        out strError);
+                    if (nRet == -1)
+                    {
+                        Console.WriteLine(strError);
+                        return false;
+                    }
+                    // 尚未绑定读者账号
+                    if (nRet == 0)
+                    {
+                        Console.WriteLine("尚未绑定读者账号，请先调Binding命令先绑定");
+                        return false;
+                    }
+
+                    // 显示个人信息
+                    Console.WriteLine(strBorrowInfo);
+                    return false;
+                }
+
 
                 // 认作册条码
                 BorrowInfo borrowInfo = null;
-                int nRet = this.WeiXinServer.Renew(this.WeiXinId,
+                nRet = this.WeiXinServer.Renew(this.WeiXinId,
                     strParam,
                     out borrowInfo,
                     out strError);
