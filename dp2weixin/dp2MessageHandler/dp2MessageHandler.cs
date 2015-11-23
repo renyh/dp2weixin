@@ -29,6 +29,7 @@ namespace dp2weixin
     {
         public string ServerBaseUrl = "";
 
+        // 由外面传进来的全局对象
         public dp2CommandServer WeiXinServer = null;
 
         /// <summary>
@@ -62,143 +63,303 @@ namespace dp2weixin
             base.OnExecuted();
         }
 
+
+
         /// <summary>
         /// 处理文字请求
         /// </summary>
         /// <returns></returns>
         public override IResponseMessageBase OnTextRequest(RequestMessageText requestMessage)
         {
-            try
+            string strText = requestMessage.Content;
+            return DoUnknownCmd(strText);
+
+
+            // 用空隔号分隔命令与参数，例如：
+            // search 空 重新发起检索
+            // search n             显示上次命中结果集中下一页
+            // search 序号         显示详细
+            // binding r0000001/111111
+            string strCommand = strText;
+            string strParam = "";
+            int nIndex = strText.IndexOf(' ');
+            if (nIndex > 0)
             {
-                //===================
-                // 一些第二步操作的放在前面
+                strCommand = strText.Substring(0, nIndex);
+                strParam = strText.Substring(nIndex + 1);
+            }
 
-                // 检查是否是输入next环境,且输入N/n
-                if (this.CurrentMessageContext.IsCanNextBrowse == true
-                    && requestMessage.Content.ToLower()=="n")
+            // 检查是否是命令，如果不是，则将输入认为是当前命令的参数（二级命令）
+            bool bRet = dp2CommandUtility.CheckIsCommand(strCommand);
+            if (bRet == false)
+            {
+                strCommand = "";
+                if (String.IsNullOrEmpty(this.CurrentMessageContext.CurrentCmdName) == false)
                 {
-                    return this.GetNextBrowse();
+                    strCommand = this.CurrentMessageContext.CurrentCmdName;
+                    strParam = strText;
                 }
-                //清掉next环境
-                this.CurrentMessageContext.IsCanNextBrowse = false;
-
-                // 判断是否是续借，输入的册条码
-                if (this.CurrentMessageContext.CurrentAction == dp2CommandUtility.C_Command_Renew)
+                else
                 {
-                    return this.Renew(requestMessage.Content);
-                }
-                //判断是否是查询输入的检索词步骤
-                if (this.CurrentMessageContext.CurrentAction == dp2CommandUtility.C_Command_Search)
-                {
-                    return this.SearchBiblio(requestMessage.Content);
-                }
-                // 获取详细的书目信息
-                if (this.CurrentMessageContext.CurrentAction == dp2CommandUtility.C_Command_SearchDetail)
-                {
-                    return this.GetDetailBiblioInfo(requestMessage.Content);
-                }
-
-
-
-                //================
-
-                //============
-                // 关于绑定
-                if (this.CurrentMessageContext.BindingStep == 0)
-                {
-                    string strContent = requestMessage.Content.Trim();
-                    int nIndex = strContent.IndexOf('/');
-                    if (nIndex > 0)
-                    {
-                        // 同时输入读者证条码与密码
-                        // 先恢复一下状态
-                        this.CurrentMessageContext.BindingStep = -1;
-                        string barcode = strContent.Substring(0, nIndex);
-                        string password = strContent.Substring(nIndex + 1);
-
-                        return this.Binding(barcode, password, requestMessage.FromUserName);
-                    }
-                    else
-                    {
-                        this.CurrentMessageContext.BindingStep = 1;
-                        var responseMessage = CreateResponseMessage<ResponseMessageText>();
-                        responseMessage.Content = "读输入密码";
-                        return responseMessage;
-                    }
-                }
-                else if (this.CurrentMessageContext.BindingStep == 1)
-                {
-                    // 已输入密码
-                    // 先恢复一下状态
-                    this.CurrentMessageContext.BindingStep = -1;
-                    string strBarcode = "";
-                    string strPassword = requestMessage.Content;
-                    var historyMessage = this.CurrentMessageContext.RequestMessages[this.CurrentMessageContext.RequestMessages.Count - 2];//是否是后进先出
-                    if (historyMessage is RequestMessageText)
-                        strBarcode = ((RequestMessageText)historyMessage).Content;
-
-                    // 绑定用户
-                    return this.Binding(strBarcode, strPassword, requestMessage.FromUserName);
-                }
-
-                // 先恢复一下绑定步骤
-                this.CurrentMessageContext.BindingStep = -1;
-
-                //=============
-
-                // 把操作步骤清掉
-                this.CurrentMessageContext.CurrentAction = "";
-
-                if (requestMessage.Content.ToLower() == dp2CommandUtility.C_Command_Search)
-                {
-                    return this.WaitForSearchWordMessage();
-                }
-                else if (requestMessage.Content.ToLower() == dp2CommandUtility.C_Command_Binding)
-                {
-                    this.CurrentMessageContext.CurrentAction = dp2CommandUtility.C_Command_Binding;
-                    return this.ReplyMyMessage(requestMessage.FromUserName);
-                }
-                else if (requestMessage.Content.ToLower() == dp2CommandUtility.C_Command_Unbinding)
-                {
-                    return this.ReplyUnbindingMessage(requestMessage.FromUserName);
-                }
-                else if (requestMessage.Content.ToLower() == dp2CommandUtility.C_Command_MyInfo)
-                {
-                    this.CurrentMessageContext.CurrentAction = dp2CommandUtility.C_Command_MyInfo;
-                    return this.ReplyMyMessage(requestMessage.FromUserName);
-                }
-                else if (requestMessage.Content.ToLower() == dp2CommandUtility.C_Command_BorrowInfo)
-                {
-                    this.CurrentMessageContext.CurrentAction = dp2CommandUtility.C_Command_BorrowInfo;
-                    return this.ReplyMyMessage(requestMessage.FromUserName);
-                }
-                else if (requestMessage.Content.ToLower() == dp2CommandUtility.C_Command_Renew)
-                {
-                    this.CurrentMessageContext.CurrentAction = dp2CommandUtility.C_Command_Renew;
-                    return this.ReplyMyMessage(requestMessage.FromUserName);
-                }
-                //BookRecommend
-                else if (requestMessage.Content.ToLower() == dp2CommandUtility.C_Command_BookRecommend)
-                {
-                    return this.ReplyNewBooks();
-                }
-                else if (requestMessage.Content.ToLower() == dp2CommandUtility.C_Command_Notice)
-                {
-                    return this.ReplyNotice();
-                }
-                else 
-                {   
-                    return this.ReplyCommonTextMessage(requestMessage);
+                    // 没有当前命令
+                    return DoUnknownCmd(strText);
                 }
             }
-            catch (Exception ex)
+
+            //=========================
+            // 检索命令
+            if (strCommand == dp2CommandUtility.C_Command_Search)
             {
-                var responseMessage = CreateResponseMessage<ResponseMessageText>();
-                responseMessage.Content = "抛出异常："+ ex.Message;
-                return responseMessage;
+                return this.DoSearch(strParam);
             }
+
+
+            /*
+           try
+           {
+
+
+               
+               //===================
+               // 一些第二步操作的放在前面
+
+               // 检查是否是输入next环境,且输入N/n
+               if (this.CurrentMessageContext.IsCanNextBrowse == true
+                   && requestMessage.Content.ToLower()=="n")
+               {
+                   return this.GetNextBrowse();
+               }
+               //清掉next环境
+               this.CurrentMessageContext.IsCanNextBrowse = false;
+
+               // 判断是否是续借，输入的册条码
+               if (this.CurrentMessageContext.CurrentAction == dp2CommandUtility.C_Command_Renew)
+               {
+                   return this.Renew(requestMessage.Content);
+               }
+               //判断是否是查询输入的检索词步骤
+               if (this.CurrentMessageContext.CurrentAction == dp2CommandUtility.C_Command_Search)
+               {
+                   return this.SearchBiblio(requestMessage.Content);
+               }
+               // 获取详细的书目信息
+               if (this.CurrentMessageContext.CurrentAction == dp2CommandUtility.C_Command_SearchDetail)
+               {
+                   return this.GetDetailBiblioInfo(requestMessage.Content);
+               }
+
+
+
+               //================
+
+               //============
+               // 关于绑定
+               if (this.CurrentMessageContext.BindingStep == 0)
+               {
+                   string strContent = requestMessage.Content.Trim();
+                   int nIndex = strContent.IndexOf('/');
+                   if (nIndex > 0)
+                   {
+                       // 同时输入读者证条码与密码
+                       // 先恢复一下状态
+                       this.CurrentMessageContext.BindingStep = -1;
+                       string barcode = strContent.Substring(0, nIndex);
+                       string password = strContent.Substring(nIndex + 1);
+
+                       return this.Binding(barcode, password, requestMessage.FromUserName);
+                   }
+                   else
+                   {
+                       this.CurrentMessageContext.BindingStep = 1;
+                       var responseMessage = CreateResponseMessage<ResponseMessageText>();
+                       responseMessage.Content = "读输入密码";
+                       return responseMessage;
+                   }
+               }
+               else if (this.CurrentMessageContext.BindingStep == 1)
+               {
+                   // 已输入密码
+                   // 先恢复一下状态
+                   this.CurrentMessageContext.BindingStep = -1;
+                   string strBarcode = "";
+                   string strPassword = requestMessage.Content;
+                   var historyMessage = this.CurrentMessageContext.RequestMessages[this.CurrentMessageContext.RequestMessages.Count - 2];//是否是后进先出
+                   if (historyMessage is RequestMessageText)
+                       strBarcode = ((RequestMessageText)historyMessage).Content;
+
+                   // 绑定用户
+                   return this.Binding(strBarcode, strPassword, requestMessage.FromUserName);
+               }
+
+               // 先恢复一下绑定步骤
+               this.CurrentMessageContext.BindingStep = -1;
+
+               //=============
+
+               // 把操作步骤清掉
+               this.CurrentMessageContext.CurrentAction = "";
+
+               if (requestMessage.Content.ToLower() == dp2CommandUtility.C_Command_Search)
+               {
+                   return this.WaitForSearchWordMessage();
+               }
+               else if (requestMessage.Content.ToLower() == dp2CommandUtility.C_Command_Binding)
+               {
+                   this.CurrentMessageContext.CurrentAction = dp2CommandUtility.C_Command_Binding;
+                   return this.ReplyMyMessage(requestMessage.FromUserName);
+               }
+               else if (requestMessage.Content.ToLower() == dp2CommandUtility.C_Command_Unbinding)
+               {
+                   return this.ReplyUnbindingMessage(requestMessage.FromUserName);
+               }
+               else if (requestMessage.Content.ToLower() == dp2CommandUtility.C_Command_MyInfo)
+               {
+                   this.CurrentMessageContext.CurrentAction = dp2CommandUtility.C_Command_MyInfo;
+                   return this.ReplyMyMessage(requestMessage.FromUserName);
+               }
+               else if (requestMessage.Content.ToLower() == dp2CommandUtility.C_Command_BorrowInfo)
+               {
+                   this.CurrentMessageContext.CurrentAction = dp2CommandUtility.C_Command_BorrowInfo;
+                   return this.ReplyMyMessage(requestMessage.FromUserName);
+               }
+               else if (requestMessage.Content.ToLower() == dp2CommandUtility.C_Command_Renew)
+               {
+                   this.CurrentMessageContext.CurrentAction = dp2CommandUtility.C_Command_Renew;
+                   return this.ReplyMyMessage(requestMessage.FromUserName);
+               }
+               //BookRecommend
+               else if (requestMessage.Content.ToLower() == dp2CommandUtility.C_Command_BookRecommend)
+               {
+                   return this.ReplyNewBooks();
+               }
+               else if (requestMessage.Content.ToLower() == dp2CommandUtility.C_Command_Notice)
+               {
+                   return this.ReplyNotice();
+               }
+               else 
+               {   
+                   return this.ReplyCommonTextMessage(requestMessage);
+               }
+           }
+           catch (Exception ex)
+           {
+               var responseMessage = CreateResponseMessage<ResponseMessageText>();
+               responseMessage.Content = "抛出异常："+ ex.Message;
+               return responseMessage;
+           }*/
+
+
         }
 
+
+        /// <summary>
+        /// 检索
+        /// </summary>
+        /// <param name="strParam"></param>
+        /// <returns></returns>
+        private IResponseMessageBase DoSearch(string strParam)
+        {
+            // 设置当前命令
+            this.CurrentMessageContext.CurrentCmdName = dp2CommandUtility.C_Command_Search;            
+            
+            long lRet = 0;
+            string strError = "";
+            SearchCommand searchCmd = (SearchCommand)this.CurrentMessageContext.CmdContiner.GetCommand(dp2CommandUtility.C_Command_Search);
+
+            if (strParam == "")
+            {
+                return this.CreateTextResponseMessage("请输入检索词");
+            }
+
+            // 如果没有结果集，优先认查询
+            if (searchCmd.BiblioResultPathList != null
+                && searchCmd.BiblioResultPathList.Count > 0)
+            {
+                // 下一页
+                if (strParam == "n")
+                {
+                    string strNextPage = "";
+                    bool bRet = searchCmd.GetNextPage(out strNextPage, out strError);
+                    if (bRet == true)
+                        return this.CreateTextResponseMessage(strNextPage);
+                    else
+                        return this.CreateTextResponseMessage(strError);
+                }
+
+                // 试着转换为书目序号
+                int nBiblioIndex = 0;
+                try
+                {
+                    nBiblioIndex = int.Parse(strParam);
+                }
+                catch
+                { }
+                // 获取详细信息
+                if (nBiblioIndex >= 1)
+                {
+                    string strBiblioInfo = "";
+                    lRet = this.WeiXinServer.GetDetailBiblioInfo(searchCmd, nBiblioIndex,
+                        out strBiblioInfo,
+                        out strError);
+                    if (lRet == -1)
+                    {
+                        return this.CreateTextResponseMessage(strError);
+                    }
+
+                    // 输入详细信息
+                    return this.CreateTextResponseMessage(strBiblioInfo);
+                }
+            }
+
+            // 检索
+            string strFirstPage = "";
+            lRet = this.WeiXinServer.SearchBiblio(strParam, searchCmd,
+                out strFirstPage,
+                out strError);
+            if (lRet == -1)
+            {
+                return this.CreateTextResponseMessage("检索出错：" + strError);
+            }
+            else if (lRet == 0)
+            {
+                return this.CreateTextResponseMessage("未命中");
+            }
+            else
+            {
+                return this.CreateTextResponseMessage(strFirstPage);
+            }
+        }        
+
+        /// <summary>
+        /// 处理未知的命令
+        /// </summary>
+        /// <param name="strText"></param>
+        /// <returns></returns>
+        private IResponseMessageBase DoUnknownCmd(string strText)
+        {
+            string strMessage = "您好，不认识的命令，您可以回复：\n"
+                   + "search:检索" + "\n"
+                   + "binding:绑定读者账号" + "\n"
+                   + "unbinding:解除绑定" + "\n"
+                   + "myinfo:个人信息" + "\n"
+                   + "borrowinfo:借阅信息" + "\n"
+                   + "renew:续借" + "\n"
+                   + "bookrecommend:新书推荐" + "\n"
+                   + "notice:最新公告";
+            return this.CreateTextResponseMessage(strMessage);
+        }
+
+        /// <summary>
+        /// 创建文本回复消息
+        /// </summary>
+        /// <param name="strText"></param>
+        /// <returns></returns>
+        private IResponseMessageBase CreateTextResponseMessage(string strText)
+        {
+            var responseMessage = CreateResponseMessage<ResponseMessageText>();
+            responseMessage.Content = strText;
+            return responseMessage;
+        }
 
 
         #region 检索

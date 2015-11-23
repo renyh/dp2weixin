@@ -15,6 +15,7 @@ using System.Linq;
 using System.Runtime.Remoting.Messaging;
 using System.Text;
 using Senparc.Weixin.MP.Entities;
+using dp2Command.Server;
 
 namespace dp2weixin
 {
@@ -28,6 +29,16 @@ namespace dp2weixin
             base.MessageContextRemoved += CustomMessageContext_MessageContextRemoved;
         }
 
+        /// <summary>
+        /// 读者证条码号，如果未绑定则为空
+        /// </summary>
+        public string ReaderBarcode = "";
+
+        // 命令集合
+        public CommandContainer CmdContiner = null;
+
+        // 当前命令
+        public string CurrentCmdName = null;
 
         
         /// <summary>
@@ -54,7 +65,7 @@ namespace dp2weixin
         /// <summary>
         /// 读者证条码号
         /// </summary>
-        public string ReaderBarcode { get; set; }
+        //public string ReaderBarcode { get; set; }
 
         /// <summary>
         /// 借书序号与对应册路径字典

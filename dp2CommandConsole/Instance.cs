@@ -412,80 +412,81 @@ namespace dp2ConsoleToWeiXin
         /// </summary>
         /// <param name="strParam"></param>
         /// <returns></returns>
-        public bool DoSearch(string strParam) 
+        public bool DoSearch(string strParam)
         {
-            long lRet = 0;
-            string strError = "";
-            
-
             // 设置当前命令
             this.CurrentCmdName = dp2CommandUtility.C_Command_Search;
 
+            long lRet = 0;
+            string strError = "";
             SearchCommand searchCmd = (SearchCommand)this.CmdContiner.GetCommand(dp2CommandUtility.C_Command_Search);
 
             if (strParam == "")
             {
                 Console.WriteLine("请输入检索词");
-                string strWord = Console.ReadLine();
-
-                string strFirstPage = "";
-                lRet = this.WeiXinServer.SearchBiblio(strWord, searchCmd,
-                    out strFirstPage,
-                    out strError);
-                if (lRet == -1)
-                {
-                    Console.WriteLine("检索出错：" + strError);
-                }
-                else if (lRet == 0)
-                {
-                    Console.WriteLine("未命中");
-                }
-                else
-                {
-                    Console.WriteLine(strFirstPage);
-                }
                 return false;
             }
 
-            // 下一页
-            if (strParam == "n")
+            // 如果没有结果集，优先认查询
+            if (searchCmd.BiblioResultPathList != null
+                && searchCmd.BiblioResultPathList.Count > 0)
             {
-                string strNextPage = "";
-                bool bRet = searchCmd.GetNextPage(out strNextPage, out strError);
-                if (bRet == true)
-                    Console.WriteLine(strNextPage);
-                else
-                    Console.WriteLine(strError);
-                return false;
-            }
-
-            // 试着转换为书目序号
-            int nBiblioIndex = 0;
-            try
-            {
-                nBiblioIndex = int.Parse(strParam);
-            }
-            catch
-            { }
-            // 获取详细信息
-            if (nBiblioIndex >= 1)
-            {
-                string strBiblioInfo = "";
-                lRet = this.WeiXinServer.GetDetailBiblioInfo(searchCmd, nBiblioIndex,
-                    out strBiblioInfo,
-                    out strError);
-                if (lRet == -1)
+                // 下一页
+                if (strParam == "n")
                 {
-                    Console.WriteLine(strError);
+                    string strNextPage = "";
+                    bool bRet = searchCmd.GetNextPage(out strNextPage, out strError);
+                    if (bRet == true)
+                        Console.WriteLine(strNextPage);
+                    else
+                        Console.WriteLine(strError);
                     return false;
                 }
 
-                // 输入详细信息
-                Console.WriteLine(strBiblioInfo);
-                return false;
+                // 试着转换为书目序号
+                int nBiblioIndex = 0;
+                try
+                {
+                    nBiblioIndex = int.Parse(strParam);
+                }
+                catch
+                { }
+                // 获取详细信息
+                if (nBiblioIndex >= 1)
+                {
+                    string strBiblioInfo = "";
+                    lRet = this.WeiXinServer.GetDetailBiblioInfo(searchCmd, nBiblioIndex,
+                        out strBiblioInfo,
+                        out strError);
+                    if (lRet == -1)
+                    {
+                        Console.WriteLine(strError);
+                        return false;
+                    }
+
+                    // 输入详细信息
+                    Console.WriteLine(strBiblioInfo);
+                    return false;
+                }
             }
 
-            Console.WriteLine("当前是Search命令，未知的命令参数'" + strParam + "'");
+            // 检索
+            string strFirstPage = "";
+            lRet = this.WeiXinServer.SearchBiblio(strParam, searchCmd,
+                out strFirstPage,
+                out strError);
+            if (lRet == -1)
+            {
+                Console.WriteLine("检索出错：" + strError);
+            }
+            else if (lRet == 0)
+            {
+                Console.WriteLine("未命中");
+            }
+            else
+            {
+                Console.WriteLine(strFirstPage);
+            }
             return false;
         }
 
