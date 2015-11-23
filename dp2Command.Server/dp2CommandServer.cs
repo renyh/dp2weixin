@@ -26,16 +26,18 @@ namespace dp2Command.Server
         // dp2通道池
         public LibraryChannelPool ChannelPool = null;
 
+        /// <summary>
+        /// 读者证条码号，如果未绑定则为空
+        /// </summary>
+        public string ReaderBarcode = "";
+
         // 命令集合
         public CommandContainer CmdContiner = null;
 
         // 当前命令
         public string CurrentCmdName = null;
 
-        /// <summary>
-        /// 读者证条码号，如果未绑定则为空
-        /// </summary>
-        public string ReaderBarcode = "";
+
 
         /// <summary>
         /// 构造函数
@@ -272,7 +274,7 @@ namespace dp2Command.Server
         /// </returns>
         public int Binding(string strBarcode, 
             string strPassword, 
-            string weiXinId,
+            string strWeiXinId,
             out string strError)
         {
             strError = "";
@@ -302,7 +304,7 @@ namespace dp2Command.Server
                     // 进行绑定
                     // 先根据barcode检索出来,得到原记录与时间戳
                     GetReaderInfoResponse response = channel.GetReaderInfo(strBarcode,
-                        "xml,advancexml,advancexml_borrow_bibliosummary,advancexml_overdue_bibliosummary");
+                        "xml");
                     if (response.GetReaderInfoResult.Value != 1)
                     {
                         strError = "根据读者证条码号得到读者记录异常：" + response.GetReaderInfoResult.ErrorInfo;
@@ -311,7 +313,6 @@ namespace dp2Command.Server
                     string strRecPath = response.strRecPath;
                     string strTimestamp = StringUtil.GetHexTimeStampString(response.baTimestamp);
                     string strXml = response.results[0];
-                    string strAdvanceXml = response.results[1];
 
                     // 改读者的email字段
                     XmlDocument readerDom = new XmlDocument();
@@ -322,10 +323,7 @@ namespace dp2Command.Server
                         emailNode = readerDom.CreateElement("email");
                         readerDom.DocumentElement.AppendChild(emailNode);
                     }
-
-
-
-                    emailNode.InnerText = JoinEmail(emailNode.InnerText, weiXinId);
+                    emailNode.InnerText = JoinEmail(emailNode.InnerText, strWeiXinId);
                     string strNewXml = ConvertXmlToString(readerDom);
 
                     // 更新到读者库
@@ -354,7 +352,15 @@ namespace dp2Command.Server
             }
         }
 
-        public long SearchReaderByOpenId(string weiXinId, out string strRecPath, out string strXml,
+        /// <summary>
+        /// 根据微信id检索读者
+        /// </summary>
+        /// <param name="strWeiXinId"></param>
+        /// <param name="strRecPath"></param>
+        /// <param name="strXml"></param>
+        /// <param name="strError"></param>
+        /// <returns></returns>
+        private long SearchReaderByWeiXinId(string strWeiXinId, out string strRecPath, out string strXml,
             out string strError)
         {
             strError = "";
@@ -367,7 +373,7 @@ namespace dp2Command.Server
             channel.Password = this.dp2Password;
             try
             {
-                string strWeiXinId = "weixinid:" + weiXinId;
+                strWeiXinId = "weixinid:" + strWeiXinId;
                 lRet = channel.SearchReaderByWeiXinId(strWeiXinId, out strError);
                 if (lRet == -1)
                 {
@@ -414,16 +420,12 @@ namespace dp2Command.Server
         /// 0   本来就未绑定，不需解绑
         /// 1   解除绑定成功
         /// </returns>
-        public int Unbinding(string weiXinId, out string strError)
+        public int Unbinding(string strWeiXinId, out string strError)
         {
             strError = "";
 
-            // 根据openid检索是否已经绑定的读者
-            string strRecPath = "";
-            string strXml = "";
-            long lRet = this.SearchReaderByOpenId(weiXinId, out strRecPath,
-                out strXml,
-                out strError);
+            // 检查微信用户是否绑定读者账号
+            long lRet = this.CheckIsBinding(strWeiXinId, out strError);
             if (lRet == -1)
                 return -1;
             // 未绑定
@@ -432,38 +434,22 @@ namespace dp2Command.Server
                 strError = "您尚未绑定读者账号，不需要解除绑定。";
                 return 0;
             }
-            if (lRet != 1)
-            {
-                strError = "异常：解绑应该不会走到这里。";
-                return -1;
-            }
+
 
             LibraryChannel channel = this.ChannelPool.GetChannel(this.dp2Url, this.dp2UserName);
             channel.Password = this.dp2Password;
             try
             {
-                // 进行解绑工作
-                string strPath = "";
-                lRet = channel.GetSearchResultForWeiXinUser(out strPath,
-                     out strXml,
-                     out strError);
-                if (lRet != 1)
-                {
-                    strError = "获取结果集异常:" + strError;
-                    return -1;
-                }
-
-                // 先根据barcode检索出来,得到原记录与时间戳
-                string barcode = "@path:" + strPath;
-                GetReaderInfoResponse response = channel.GetReaderInfo(barcode, "xml");
+                // 得到原读者记录与时间戳
+                GetReaderInfoResponse response = channel.GetReaderInfo(this.ReaderBarcode, "xml");
                 if (response.GetReaderInfoResult.Value != 1)
                 {
                     strError = "根据路径得到读者记录异常：" + response.GetReaderInfoResult.ErrorInfo;
                     return -1;
                 }
-                strRecPath = response.strRecPath;
+                string strRecPath = response.strRecPath;
                 string strTimestamp = StringUtil.GetHexTimeStampString(response.baTimestamp);
-                strXml = response.results[0];
+                string strXml = response.results[0];
 
                 // 修改xml中的email字段，去掉weixin:***
                 // 改为读者的email字段
@@ -498,7 +484,7 @@ namespace dp2Command.Server
                 string strNewXml = ConvertXmlToString(readerDom);
 
                 // 更新到读者库
-                lRet = channel.SetReaderInfoForWeiXin(strPath,
+                lRet = channel.SetReaderInfoForWeiXin(strRecPath,
                     strNewXml,
                     strTimestamp,
                     out strError);
@@ -507,6 +493,10 @@ namespace dp2Command.Server
                     strError = "解除绑定出错：" + strError;
                     return -1;
                 }
+
+                //清掉内存的ReaderBarcode
+                this.ReaderBarcode = "";
+
                 return 1;
             }
             finally
@@ -527,7 +517,7 @@ namespace dp2Command.Server
         /// </summary>
         /// <param name="strItemBarcode">册条码号</param>
         /// <returns></returns>
-        public int  Renew(string weixinId,string strItemBarcode,out BorrowInfo borrowInfo,out string strError)
+        public int  Renew(string strWeiXinId,string strItemBarcode,out BorrowInfo borrowInfo,out string strError)
         {
             borrowInfo = null;
             strError = "";
@@ -536,12 +526,8 @@ namespace dp2Command.Server
                 strItemBarcode = "";
             strItemBarcode = strItemBarcode.Trim();
 
-            // 根据openid检索绑定的读者
-            string strRecPath = "";
-            string strXml = "";
-            long lRet = this.SearchReaderByOpenId(weixinId, out strRecPath,
-                out strXml,
-                out strError);
+            // 检查strWeiXinId是否已经绑定的读者
+            long lRet = this.CheckIsBinding(strWeiXinId, out strError);
             if (lRet == -1)
                 return -1;
             // 未绑定
@@ -594,6 +580,47 @@ namespace dp2Command.Server
 
         }
 
+
+        /// <summary>
+        /// 检查微信用户是否绑定读者账号
+        /// </summary>
+        /// <param name="strWeiXinId"></param>
+        /// <param name="strXml"></param>
+        /// <param name="strError"></param>
+        /// <returns></returns>
+        private int CheckIsBinding(string strWeiXinId,out string strError)
+        {
+            strError = "";
+            string strXml = "";
+
+            //如果内存中，没有ReaderBarCode,则先检查一下是否绑定的账号
+            if (this.ReaderBarcode == "")
+            {
+                // 根据openid检索绑定的读者
+                string strRecPath = "";
+                long lRet = this.SearchReaderByWeiXinId(strWeiXinId, out strRecPath,
+                    out strXml,
+                    out strError);
+                if (lRet == -1)
+                {
+                    return -1;
+                }
+                // 未绑定
+                if (lRet == 0)
+                {
+                    return 0;
+                }
+
+                XmlDocument dom = new XmlDocument();
+                dom.LoadXml(strXml);
+                this.ReaderBarcode = DomUtil.GetNodeText(dom.DocumentElement.SelectSingleNode("barcode"));
+
+            }
+
+            return 1;
+        }
+
+
         /// <summary>
         /// 
         /// </summary>
@@ -605,20 +632,15 @@ namespace dp2Command.Server
         /// 0   未绑定
         /// 1   成功
         /// </returns>
-        public int GetMyInfo(string openid, out string strMyInfo, out string strError)
+        public int GetMyInfo(string strWeiXinId, out string strMyInfo, out string strError)
         {
             strError = "";
             strMyInfo = "";
 
-            // 根据openid检索绑定的读者
-            string strRecPath = "";
-            string strXml = "";
-            long lRet = this.SearchReaderByOpenId(openid, out strRecPath,
-                out strXml,
-                out strError);
+            // 检查是否已经绑定读者账号
+            long lRet = this.CheckIsBinding(strWeiXinId,out strError);
             if (lRet == -1)
                 return -1;
-
             // 未绑定
             if (lRet == 0)
             {
@@ -626,19 +648,14 @@ namespace dp2Command.Server
                 return 0;
             }
 
-            // 异常，这里不可能不定1
-            if (lRet != 1)
-            {
-                strError = "SearchReaderByOpenId()函数返回值" + lRet + "异常";
-                return -1;
-            }
-
             // 得到高级xml
-            lRet = this.GetReaderAdvanceXml(strRecPath, out strXml,
+            string strXml = "";
+            lRet = this.GetReaderAdvanceXml(this.ReaderBarcode, out strXml,
                 out strError);
             if (lRet == -1)
                 return -1;
 
+            // 取出个人信息
             XmlDocument dom = new XmlDocument();
             dom.LoadXml(strXml);
             string strReaderBarcode = DomUtil.GetElementText(dom.DocumentElement, "barcode");
@@ -678,20 +695,15 @@ namespace dp2Command.Server
         /// 0   未绑定
         /// 1   成功
         /// </returns>
-        public int GetBorrowInfo(string openid, out string strBorrowInfo, out string strError)
+        public int GetBorrowInfo(string strWeiXinId, out string strBorrowInfo, out string strError)
         {
             strError = "";
             strBorrowInfo = "";
 
-            // 根据openid检索绑定的读者
-            string strRecPath = "";
-            string strXml = "";
-            long lRet = this.SearchReaderByOpenId(openid, out strRecPath,
-                out strXml,
-                out strError);
+            // 检查是否已经绑定读者账号
+            long lRet = this.CheckIsBinding(strWeiXinId, out strError);
             if (lRet == -1)
                 return -1;
-
             // 未绑定
             if (lRet == 0)
             {
@@ -699,15 +711,9 @@ namespace dp2Command.Server
                 return 0;
             }
 
-            // 异常，这里不可能不定1
-            if (lRet != 1)
-            {
-                strError = "SearchReaderByOpenId()函数返回值" + lRet + "异常";
-                return -1;
-            }
-
             // 得到高级xml
-            lRet = this.GetReaderAdvanceXml(strRecPath, out strXml,
+            string strXml = "";
+            lRet = this.GetReaderAdvanceXml(this.ReaderBarcode, out strXml,
                 out strError);
             if (lRet == -1)
                 return -1;
@@ -722,7 +728,12 @@ namespace dp2Command.Server
 
         }
 
-
+        /// <summary>
+        /// 详细借阅信息
+        /// </summary>
+        /// <param name="strXml"></param>
+        /// <param name="strBorrowInfo"></param>
+        /// <returns></returns>
         int GetBorrowsInfoInternal(string strXml, out string strBorrowInfo)
         {
             strBorrowInfo = "";
@@ -790,7 +801,7 @@ namespace dp2Command.Server
         /// <param name="strXml"></param>
         /// <param name="strError"></param>
         /// <returns></returns>
-        private int GetReaderAdvanceXml(string strRecPath, out string strXml, out string strError) 
+        private int GetReaderAdvanceXml(string strBarcode, out string strXml, out string strError) 
         {
             strXml = "";
             strError = "";
@@ -800,7 +811,7 @@ namespace dp2Command.Server
             try
             {
                 // 先根据barcode检索出来,得到原记录与时间戳
-                GetReaderInfoResponse response = channel.GetReaderInfo("@path:" + strRecPath,
+                GetReaderInfoResponse response = channel.GetReaderInfo(strBarcode,//"@path:" + strRecPath,
                     "advancexml,advancexml_borrow_bibliosummary,advancexml_overdue_bibliosummary");
                 if (response.GetReaderInfoResult.Value != 1)
                 {
