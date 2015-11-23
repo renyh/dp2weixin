@@ -8,14 +8,19 @@
     <title></title>
 </head>
 <body>
-    <form id="form1" runat="server">
+    <form id="form1" runat="server" defaultbutton="btnSend">
     <div>
-        <asp:Button ID="btnSend" runat="server" Text="send" OnClick="btnSend_Click" />
+        <b>request:</b>
         <br />
-        <asp:TextBox ID="txtMessage" runat="server" TextMode="MultiLine" Rows="5" Height="126px"  Width="521px"></asp:TextBox>
+        <asp:TextBox ID="txtMessage" runat="server" Width="429px" ></asp:TextBox>
+        <asp:Button ID="btnSend" runat="server" Text="send" OnClick="btnSend_Click" BackColor="#FF9933"  />
+
+        <br />
+        <asp:Label ID="lblMessage" runat="server" Text="" BackColor="#66ccff"></asp:Label>
         <br />
         <br />
-        result:<br />
+        <b>response:</b>
+        <br />
         <asp:TextBox ID="txtResult" runat="server" Height="255px" Width="860px" TextMode="MultiLine" Rows="5"></asp:TextBox>
         <br />
     </div>

@@ -39,6 +39,12 @@ namespace WebWeiXinToGZH
                     baData);
                 string strResult = Encoding.UTF8.GetString(result);
                 this.txtResult.Text = strResult;
+
+                // 将焦点设回输入框
+                this.lblMessage.Text = "您刚才发的消息是[" + this.txtMessage.Text + "]";
+                this.txtMessage.Text = "";
+                
+                this.txtMessage.Focus();
             }
             catch (Exception ex)
             {

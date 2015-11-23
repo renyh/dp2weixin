@@ -5,7 +5,7 @@ using System.Web;
 using System.Web.Security;
 using System.Web.SessionState;
 
-namespace dp2WebToWeiXin
+namespace WebWeiXinToGZH
 {
     public class Global : System.Web.HttpApplication
     {
