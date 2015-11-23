@@ -120,8 +120,13 @@ namespace dp2weixin
             }
 
             //设当前命令路径，用于在回复时输出
-            this.CurrentMessageContext.CurrentCmdPath = strCommand + ">" + strParam;
+            string strPath = strCommand;
+            if (String.IsNullOrEmpty(strParam)==false)
+                strPath = strCommand + ">" + strParam;
+            this.CurrentMessageContext.CurrentCmdPath = strPath;
 
+            // command可以转成小写
+            strCommand = strCommand.ToLower();
 
             //=========================
             // 检索命令
@@ -399,7 +404,7 @@ namespace dp2weixin
             // 尚未绑定读者账号
             if (lRet == 0)
             {
-                return this.CreateTextResponseMessage("尚未绑定读者账号，请先调Binding命令先绑定");
+                return this.CreateTextResponseMessage("尚未绑定读者账号，请先调binding命令先绑定");
             }
 
             // 获取读者信息
@@ -436,7 +441,7 @@ namespace dp2weixin
             // 尚未绑定读者账号
             if (lRet == 0)
             {
-                return this.CreateTextResponseMessage("尚未绑定读者账号，请先调Binding命令先绑定");
+                return this.CreateTextResponseMessage("尚未绑定读者账号，请先调binding命令先绑定");
             }
 
             string strBorrowInfo = "";
@@ -473,7 +478,7 @@ namespace dp2weixin
             // 尚未绑定读者账号
             if (lRet == 0)
             {
-                return this.CreateTextResponseMessage("尚未绑定读者账号，请先调Binding命令先绑定");
+                return this.CreateTextResponseMessage("尚未绑定读者账号，请先调binding命令先绑定");
             }
 
             // 查看已借图书
@@ -540,7 +545,9 @@ namespace dp2weixin
         {
             if (this.IsDisplayPath == true)
             {
-                strText = "命令路径:[" +this.CurrentMessageContext.CurrentCmdPath+"]\n" + strText;
+                strText = "命令路径:[" +this.CurrentMessageContext.CurrentCmdPath+"]\n"
+                    +"------------\n"
+                    + strText;
             }
 
             var responseMessage = CreateResponseMessage<ResponseMessageText>();

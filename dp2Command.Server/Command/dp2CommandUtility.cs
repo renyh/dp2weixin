@@ -18,7 +18,7 @@ namespace dp2Command.Server
         public const string C_Command_BookRecommend = "bookrecommend";
         public const string C_Command_Notice = "notice";//Notice
         // 检索每页显示记录数
-        public const int C_ViewCount_OnePage = 50;
+        public const int C_ViewCount_OnePage = 20;
 
         public const String C_WeiXinIdPrefix = "weixinid:";
 
