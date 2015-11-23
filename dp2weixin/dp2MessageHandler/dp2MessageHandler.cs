@@ -34,6 +34,9 @@ namespace dp2weixin
         // 公众号程序目录，用于获取新书推荐与公告配置文件的路径
         public string dp2WeiXinAppDir = "";
 
+        // 是否显示消息路径
+        public bool IsDisplayPath = true;
+
         /// <summary>
         /// 构造函数
         /// </summary>
@@ -72,6 +75,9 @@ namespace dp2weixin
         public override IResponseMessageBase OnTextRequest(RequestMessageText requestMessage)
         {
             string strText = requestMessage.Content;
+
+            //设当前命令路径，用于在回复时输出
+            this.CurrentMessageContext.CurrentCmdPath = strText;
 
             // 退出命令环境
             if (strText == "exit" || strText == "quit")
@@ -112,6 +118,10 @@ namespace dp2weixin
                     return DoUnknownCmd(strText);
                 }
             }
+
+            //设当前命令路径，用于在回复时输出
+            this.CurrentMessageContext.CurrentCmdPath = strCommand + ">" + strParam;
+
 
             //=========================
             // 检索命令
@@ -528,6 +538,11 @@ namespace dp2weixin
         /// <returns></returns>
         private IResponseMessageBase CreateTextResponseMessage(string strText)
         {
+            if (this.IsDisplayPath == true)
+            {
+                strText = "命令路径:[" +this.CurrentMessageContext.CurrentCmdPath+"]\n" + strText;
+            }
+
             var responseMessage = CreateResponseMessage<ResponseMessageText>();
             responseMessage.Content = strText;
             return responseMessage;

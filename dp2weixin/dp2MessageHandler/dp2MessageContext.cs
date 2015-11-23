@@ -24,14 +24,6 @@ namespace dp2weixin
     /// </summary>
     public class dp2MessageContext : MessageContext<IRequestMessageBase,IResponseMessageBase>
     {
-        public dp2MessageContext()
-        {
-            base.MessageContextRemoved += CustomMessageContext_MessageContextRemoved;
-
-            // 初始命令集合，目前只存放三个有状态的命令：search,binding,renew
-            this.CmdContiner = new CommandContainer();
-        }
-
         /// <summary>
         /// 读者证条码号，如果未绑定则为空
         /// </summary>
@@ -39,57 +31,22 @@ namespace dp2weixin
 
         // 命令集合
         public CommandContainer CmdContiner = null;
-
         // 当前命令
         public string CurrentCmdName = null;
 
-        
+        // 当前命令路径,该变量主要用于输入
+        public string CurrentCmdPath = "";
+
         /// <summary>
-        /// 账号绑定输入到了哪一步骤
+        /// 构造函数
         /// </summary>
-        private int _BindingStep = -1;
-        public int BindingStep
+        public dp2MessageContext():base()
         {
-            get
-            {
-                return _BindingStep;
-            }
-            set
-            {
-                _BindingStep = value;
-            }
+            base.MessageContextRemoved += CustomMessageContext_MessageContextRemoved;
+
+            // 初始命令集合，目前只存放三个有状态的命令：search,binding,renew
+            this.CmdContiner = new CommandContainer();
         }
-
-        /// <summary>
-        /// 当前操作，用户点击的菜单或者发的命令消息
-        /// </summary>
-        public string CurrentAction { get; set; }
-
-        /// <summary>
-        /// 读者证条码号
-        /// </summary>
-        //public string ReaderBarcode { get; set; }
-
-        /// <summary>
-        /// 借书序号与对应册路径字典
-        /// </summary>
-        public Dictionary<string, string> BorrowDict { get; set; }
-
-        /// <summary>
-        /// 书目检索结果集，存路径
-        /// </summary>
-        public List<string> BiblioResultPathList { get; set; }
-
-        /// <summary>
-        /// 是否是可以输入n翻页的环境
-        /// </summary>
-        public bool IsCanNextBrowse = false;
-
-        /// <summary>
-        /// 下一步开始序号
-        /// </summary>
-        public long ResultNextStart = -1;
-        
 
         /// <summary>
         /// 当上下文过期，被移除时触发的时间
@@ -109,7 +66,6 @@ namespace dp2weixin
             }
 
             //TODO:这里根据需要执行消息过期时候的逻辑，下面的代码仅供参考
-
             //Log.InfoFormat("{0}的消息上下文已过期",e.OpenId);
             //api.SendMessage(e.OpenId, "由于长时间未搭理客服，您的客服状态已退出！");
         }

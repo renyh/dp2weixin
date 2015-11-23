@@ -42,6 +42,10 @@ namespace dp2weixin
             //菜单点击，需要跟创建菜单时的Key匹配
             // 注意这里为了与命令常量一致，都转成小写了
             string strEventKey = requestMessage.EventKey.ToLower();
+
+            //设当前命令路径，用于在回复时输出
+            this.CurrentMessageContext.CurrentCmdPath = strEventKey;
+
             switch (strEventKey) 
             {
                 case dp2CommandUtility.C_Command_Search: //"Search":
