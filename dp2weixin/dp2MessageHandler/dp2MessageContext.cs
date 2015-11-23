@@ -28,6 +28,8 @@ namespace dp2weixin
             base.MessageContextRemoved += CustomMessageContext_MessageContextRemoved;
         }
 
+
+        
         /// <summary>
         /// 账号绑定输入到了哪一步骤
         /// </summary>
@@ -73,7 +75,7 @@ namespace dp2weixin
         /// 下一步开始序号
         /// </summary>
         public long ResultNextStart = -1;
-
+        
 
         /// <summary>
         /// 当上下文过期，被移除时触发的时间

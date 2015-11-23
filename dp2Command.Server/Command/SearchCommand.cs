@@ -36,6 +36,12 @@ namespace dp2Command.Server
             strText = "";
             strError = "";
 
+            if (this.IsCanNextPage == false)
+            {
+                strError = "已到末页。";
+                return false;
+            }
+
             long lTotalCount = this.BiblioResultPathList.Count;
             if (this.ResultNextStart >= lTotalCount)
             {

@@ -3,7 +3,6 @@ using System.Configuration;
 using System.IO;
 using System.Text;
 using System.Collections.Generic;
-//using System.Web.Configuration;
 using Senparc.Weixin.MP;
 using Senparc.Weixin.MP.Entities;
 using Senparc.Weixin.MP.MessageHandlers;

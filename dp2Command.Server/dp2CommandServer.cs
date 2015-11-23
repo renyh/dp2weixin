@@ -4,6 +4,7 @@ using DigitalPlatform.Xml;
 using dp2Command.Server.dp2RestfulApi;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -26,16 +27,7 @@ namespace dp2Command.Server
         // dp2通道池
         public LibraryChannelPool ChannelPool = null;
 
-        /// <summary>
-        /// 读者证条码号，如果未绑定则为空
-        /// </summary>
-        public string ReaderBarcode = "";
 
-        // 命令集合
-        public CommandContainer CmdContiner = null;
-
-        // 当前命令
-        public string CurrentCmdName = null;
 
 
 
@@ -65,7 +57,7 @@ namespace dp2Command.Server
             ChannelPool.BeforeLogin += new BeforeLoginEventHandle(Channel_BeforeLogin);
 
             //命令集合
-            this.CmdContiner = new CommandContainer();
+            //this.CmdContiner = new CommandContainer();
         }
 
 
@@ -98,6 +90,7 @@ namespace dp2Command.Server
         /// <param name="strWord"></param>
         /// <returns></returns>
         public long SearchBiblio(string strWord,
+            SearchCommand searchCmd,
             out string strFirstPage,
             out string strError)
         {
@@ -165,7 +158,7 @@ namespace dp2Command.Server
                 }
 
                 // 将检索结果信息保存到检索命令中
-                SearchCommand searchCmd = (SearchCommand)this.CmdContiner.GetCommand(dp2CommandUtility.C_Command_Search);
+               //searchCommand searchCmd = (SearchCommand)this.CmdContiner.GetCommand(dp2CommandUtility.C_Command_Search);
                 searchCmd.BiblioResultPathList = totalResultList;
                 searchCmd.ResultNextStart = 0;
 
@@ -185,11 +178,12 @@ namespace dp2Command.Server
             return lTotoalCount;
         }
 
+        /*
         /// <summary>
         /// 得到下页检索结果
         /// </summary>
         /// <returns></returns>
-        public string GetNextPageForSearch()
+        public string GetNextPageForSearch(searchCommand searchCmd)
         {
             string strResult = "";
 
@@ -209,6 +203,7 @@ namespace dp2Command.Server
 
             return strResult;
         }
+         */
 
         /// <summary>
         /// 根据书目序号得到详细的参考信息
@@ -217,14 +212,15 @@ namespace dp2Command.Server
         /// <param name="strInfo"></param>
         /// <param name="strError"></param>
         /// <returns></returns>
-        public int GetDetailBiblioInfo(int  nIndex,
+        public int GetDetailBiblioInfo(SearchCommand searchCmd,
+            int  nIndex,
             out string strBiblioInfo,
             out string strError)
         {
             strBiblioInfo = "";
             strError = "";
+            Debug.Assert(searchCmd != null);
 
-            SearchCommand searchCmd = (SearchCommand)this.CmdContiner.GetCommand(dp2CommandUtility.C_Command_Search);
             //检查有无超过数组界面
             if (nIndex <= 0 || searchCmd.BiblioResultPathList.Count < nIndex)
             {
@@ -275,9 +271,11 @@ namespace dp2Command.Server
         public int Binding(string strBarcode, 
             string strPassword, 
             string strWeiXinId,
+            out string strReaderBarcode,
             out string strError)
         {
             strError = "";
+            strReaderBarcode = "";
 
             LibraryChannel channel = this.ChannelPool.GetChannel(this.dp2Url, this.dp2UserName);
             channel.Password = this.dp2Password;
@@ -338,7 +336,7 @@ namespace dp2Command.Server
                     }
 
                     // 绑定成功，把读者证条码记下来，用于续借 2015/11/7，不要用strbarcode变量，因为可能做的大小写转换
-                    this.ReaderBarcode= DomUtil.GetNodeText(readerDom.DocumentElement.SelectSingleNode("barcode"));                    
+                    strReaderBarcode = DomUtil.GetNodeText(readerDom.DocumentElement.SelectSingleNode("barcode"));                    
                     return 1;
 
                 }
@@ -360,7 +358,7 @@ namespace dp2Command.Server
         /// <param name="strXml"></param>
         /// <param name="strError"></param>
         /// <returns></returns>
-        private long SearchReaderByWeiXinId(string strWeiXinId, out string strRecPath, out string strXml,
+        public long SearchReaderByWeiXinId(string strWeiXinId, out string strRecPath, out string strXml,
             out string strError)
         {
             strError = "";
@@ -373,7 +371,7 @@ namespace dp2Command.Server
             channel.Password = this.dp2Password;
             try
             {
-                strWeiXinId = "weixinid:" + strWeiXinId;
+                strWeiXinId = dp2CommandUtility.C_WeiXinIdPrefix + strWeiXinId;//weixinid:
                 lRet = channel.SearchReaderByWeiXinId(strWeiXinId, out strError);
                 if (lRet == -1)
                 {
@@ -420,12 +418,14 @@ namespace dp2Command.Server
         /// 0   本来就未绑定，不需解绑
         /// 1   解除绑定成功
         /// </returns>
-        public int Unbinding(string strWeiXinId, out string strError)
+        public int Unbinding(string strReaderBarcode, out string strError)
         {
             strError = "";
 
+            /*
             // 检查微信用户是否绑定读者账号
-            long lRet = this.CheckIsBinding(strWeiXinId, out strError);
+            string strBarcode = "";
+            long lRet = this.CheckIsBinding(strWeiXinId,out strBarcode, out strError);
             if (lRet == -1)
                 return -1;
             // 未绑定
@@ -434,14 +434,14 @@ namespace dp2Command.Server
                 strError = "您尚未绑定读者账号，不需要解除绑定。";
                 return 0;
             }
-
+            */
 
             LibraryChannel channel = this.ChannelPool.GetChannel(this.dp2Url, this.dp2UserName);
             channel.Password = this.dp2Password;
             try
             {
                 // 得到原读者记录与时间戳
-                GetReaderInfoResponse response = channel.GetReaderInfo(this.ReaderBarcode, "xml");
+                GetReaderInfoResponse response = channel.GetReaderInfo(strReaderBarcode, "xml");
                 if (response.GetReaderInfoResult.Value != 1)
                 {
                     strError = "根据路径得到读者记录异常：" + response.GetReaderInfoResult.ErrorInfo;
@@ -459,7 +459,7 @@ namespace dp2Command.Server
                 string email = emailNode.InnerText.Trim();
                 string strEmailLeft = email;
                 string strEmailLRight = "";
-                int nIndex = email.IndexOf("weixinid:");
+                int nIndex = email.IndexOf(dp2CommandUtility.C_WeiXinIdPrefix);//"weixinid:");
                 if (nIndex >= 0)
                 {
                     strEmailLeft = email.Substring(0, nIndex);
@@ -484,7 +484,7 @@ namespace dp2Command.Server
                 string strNewXml = ConvertXmlToString(readerDom);
 
                 // 更新到读者库
-                lRet = channel.SetReaderInfoForWeiXin(strRecPath,
+                long lRet = channel.SetReaderInfoForWeiXin(strRecPath,
                     strNewXml,
                     strTimestamp,
                     out strError);
@@ -494,8 +494,8 @@ namespace dp2Command.Server
                     return -1;
                 }
 
-                //清掉内存的ReaderBarcode
-                this.ReaderBarcode = "";
+                //清掉内存的ReaderBarcode???
+                //this.ReaderBarcode = "";
 
                 return 1;
             }
@@ -517,7 +517,7 @@ namespace dp2Command.Server
         /// </summary>
         /// <param name="strItemBarcode">册条码号</param>
         /// <returns></returns>
-        public int  Renew(string strWeiXinId,string strItemBarcode,out BorrowInfo borrowInfo,out string strError)
+        public int Renew1(string strReaderBarcode, string strItemBarcode, out BorrowInfo borrowInfo, out string strError)
         {
             borrowInfo = null;
             strError = "";
@@ -525,25 +525,13 @@ namespace dp2Command.Server
             if (strItemBarcode == null)
                 strItemBarcode = "";
             strItemBarcode = strItemBarcode.Trim();
-
-            // 检查strWeiXinId是否已经绑定的读者
-            long lRet = this.CheckIsBinding(strWeiXinId, out strError);
-            if (lRet == -1)
-                return -1;
-            // 未绑定
-            if (lRet == 0)
-            {
-                strError = "尚未绑定读者账号";
-                return 0;
-            }
-
             if (strItemBarcode == "")
             {
                 strError = "续借失败：您输入的续借图书编号或者册条码号为空。";
                 return -1;
             }
 
-            if (String.IsNullOrEmpty(this.ReaderBarcode )==true)
+            if (String.IsNullOrEmpty(strReaderBarcode )==true)
             {
                 strError = "续借失败：内部错误，读者证条码号为空。";
                 return -1;
@@ -563,7 +551,7 @@ namespace dp2Command.Server
             channel.Password = this.dp2Password;
             try
             {
-                lRet = channel.Renew(this.ReaderBarcode,
+                long lRet = channel.Renew(strReaderBarcode,
                     strItemBarcode,
                     out borrowInfo,
                     out strError);
@@ -581,44 +569,6 @@ namespace dp2Command.Server
         }
 
 
-        /// <summary>
-        /// 检查微信用户是否绑定读者账号
-        /// </summary>
-        /// <param name="strWeiXinId"></param>
-        /// <param name="strXml"></param>
-        /// <param name="strError"></param>
-        /// <returns></returns>
-        private int CheckIsBinding(string strWeiXinId,out string strError)
-        {
-            strError = "";
-            string strXml = "";
-
-            //如果内存中，没有ReaderBarCode,则先检查一下是否绑定的账号
-            if (this.ReaderBarcode == "")
-            {
-                // 根据openid检索绑定的读者
-                string strRecPath = "";
-                long lRet = this.SearchReaderByWeiXinId(strWeiXinId, out strRecPath,
-                    out strXml,
-                    out strError);
-                if (lRet == -1)
-                {
-                    return -1;
-                }
-                // 未绑定
-                if (lRet == 0)
-                {
-                    return 0;
-                }
-
-                XmlDocument dom = new XmlDocument();
-                dom.LoadXml(strXml);
-                this.ReaderBarcode = DomUtil.GetNodeText(dom.DocumentElement.SelectSingleNode("barcode"));
-
-            }
-
-            return 1;
-        }
 
 
         /// <summary>
@@ -632,11 +582,13 @@ namespace dp2Command.Server
         /// 0   未绑定
         /// 1   成功
         /// </returns>
-        public int GetMyInfo(string strWeiXinId, out string strMyInfo, out string strError)
+        public int GetMyInfo1(string strReaderBarcode, out string strMyInfo, out string strError)
         {
             strError = "";
             strMyInfo = "";
 
+            Debug.Assert(String.IsNullOrEmpty(strReaderBarcode) == false);
+            /*
             // 检查是否已经绑定读者账号
             long lRet = this.CheckIsBinding(strWeiXinId,out strError);
             if (lRet == -1)
@@ -647,10 +599,10 @@ namespace dp2Command.Server
                 strError = "尚未绑定读者账号";
                 return 0;
             }
-
+            */
             // 得到高级xml
             string strXml = "";
-            lRet = this.GetReaderAdvanceXml(this.ReaderBarcode, out strXml,
+            long lRet = this.GetReaderAdvanceXml(strReaderBarcode, out strXml,
                 out strError);
             if (lRet == -1)
                 return -1;
@@ -658,7 +610,7 @@ namespace dp2Command.Server
             // 取出个人信息
             XmlDocument dom = new XmlDocument();
             dom.LoadXml(strXml);
-            string strReaderBarcode = DomUtil.GetElementText(dom.DocumentElement, "barcode");
+            //string strReaderBarcode = DomUtil.GetElementText(dom.DocumentElement, "barcode");
             string strName = DomUtil.GetElementText(dom.DocumentElement, "name");
             string strDepartment = DomUtil.GetElementText(dom.DocumentElement, "department");
             string strState = DomUtil.GetElementText(dom.DocumentElement, "state");
@@ -695,11 +647,12 @@ namespace dp2Command.Server
         /// 0   未绑定
         /// 1   成功
         /// </returns>
-        public int GetBorrowInfo(string strWeiXinId, out string strBorrowInfo, out string strError)
+        public int GetBorrowInfo1(string strReaderBarcode, out string strBorrowInfo, out string strError)
         {
             strError = "";
             strBorrowInfo = "";
 
+            /*
             // 检查是否已经绑定读者账号
             long lRet = this.CheckIsBinding(strWeiXinId, out strError);
             if (lRet == -1)
@@ -710,10 +663,11 @@ namespace dp2Command.Server
                 strError = "尚未绑定读者账号";
                 return 0;
             }
+             */
 
             // 得到高级xml
             string strXml = "";
-            lRet = this.GetReaderAdvanceXml(this.ReaderBarcode, out strXml,
+            long lRet = this.GetReaderAdvanceXml(strReaderBarcode, out strXml,
                 out strError);
             if (lRet == -1)
                 return -1;
@@ -734,7 +688,7 @@ namespace dp2Command.Server
         /// <param name="strXml"></param>
         /// <param name="strBorrowInfo"></param>
         /// <returns></returns>
-        int GetBorrowsInfoInternal(string strXml, out string strBorrowInfo)
+       private int GetBorrowsInfoInternal(string strXml, out string strBorrowInfo)
         {
             strBorrowInfo = "";
 
@@ -801,7 +755,7 @@ namespace dp2Command.Server
         /// <param name="strXml"></param>
         /// <param name="strError"></param>
         /// <returns></returns>
-        private int GetReaderAdvanceXml(string strBarcode, out string strXml, out string strError) 
+        private int GetReaderAdvanceXml(string strReaderBarcode, out string strXml, out string strError) 
         {
             strXml = "";
             strError = "";
@@ -811,7 +765,7 @@ namespace dp2Command.Server
             try
             {
                 // 先根据barcode检索出来,得到原记录与时间戳
-                GetReaderInfoResponse response = channel.GetReaderInfo(strBarcode,//"@path:" + strRecPath,
+                GetReaderInfoResponse response = channel.GetReaderInfo(strReaderBarcode,//"@path:" + strRecPath,
                     "advancexml,advancexml_borrow_bibliosummary,advancexml_overdue_bibliosummary");
                 if (response.GetReaderInfoResult.Value != 1)
                 {
@@ -868,7 +822,7 @@ namespace dp2Command.Server
             string email = oldEmail.Trim();
             string strEmailLeft = email;
             string strEmailLRight = "";
-            int nIndex = email.IndexOf("weixinid:");
+            int nIndex = email.IndexOf(dp2CommandUtility.C_WeiXinIdPrefix);//"weixinid:");
             if (nIndex > 0)
             {
                 strEmailLeft = email.Substring(0, nIndex);
@@ -894,7 +848,7 @@ namespace dp2Command.Server
             {
                 if (email != "")
                     email += ",";
-                email += "weixinid:" + openid;
+                email += dp2CommandUtility.C_WeiXinIdPrefix + openid;// "weixinid:"
             }
 
             return email;

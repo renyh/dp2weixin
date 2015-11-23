@@ -23,6 +23,16 @@ namespace dp2ConsoleToWeiXin
         public dp2CommandServer WeiXinServer = null;
 
         public string WeiXinId = "1234567890";
+        /// <summary>
+        /// 读者证条码号，如果未绑定则为空
+        /// </summary>
+        public string ReaderBarcode = "";
+
+        // 命令集合
+        public CommandContainer CmdContiner = null;
+
+        // 当前命令
+        public string CurrentCmdName = null;
 
         /// <summary>
         /// 构造函数
@@ -47,6 +57,9 @@ namespace dp2ConsoleToWeiXin
                 strDp2Password,
                 strDp2WeiXinUrl,
                 strDp2WeiXinLogDir);
+
+            //命令集合
+            this.CmdContiner = new CommandContainer();
         }
  
         // return:
@@ -83,9 +96,9 @@ namespace dp2ConsoleToWeiXin
             if (bRet == false)
             {
                 strCommand = "";
-                if (String.IsNullOrEmpty(this.WeiXinServer.CurrentCmdName) == false)
+                if (String.IsNullOrEmpty(this.CurrentCmdName) == false)
                 {
-                    strCommand = this.WeiXinServer.CurrentCmdName;
+                    strCommand = this.CurrentCmdName;
                     strParam = line;
                 }
                 else
@@ -100,7 +113,9 @@ namespace dp2ConsoleToWeiXin
             if (strCommand == dp2CommandUtility.C_Command_Search)
             {
                 // 设置当前命令
-                this.WeiXinServer.CurrentCmdName = strCommand;
+                this.CurrentCmdName = strCommand;
+
+                SearchCommand searchCmd = (SearchCommand)this.CmdContiner.GetCommand(dp2CommandUtility.C_Command_Search);
 
                 if (strParam == "")
                 {
@@ -108,7 +123,7 @@ namespace dp2ConsoleToWeiXin
                     string strWord = Console.ReadLine();
 
                     string strFirstPage = "";
-                    lRet = this.WeiXinServer.SearchBiblio(strWord,
+                    lRet = this.WeiXinServer.SearchBiblio(strWord,searchCmd,
                         out strFirstPage,
                         out strError);
                     if (lRet == -1)
@@ -129,7 +144,8 @@ namespace dp2ConsoleToWeiXin
                 // 下一页
                 if (strParam == "n")
                 {
-                    string strNextPage = this.WeiXinServer.GetNextPageForSearch();
+                    string strNextPage = "";
+                    bRet = searchCmd.GetNextPage(out strNextPage, out strError);
                     Console.WriteLine(strNextPage);
                     return false;
                 }
@@ -146,7 +162,7 @@ namespace dp2ConsoleToWeiXin
                 if (nBiblioIndex >= 1)
                 {
                     string strBiblioInfo = "";
-                    nRet = this.WeiXinServer.GetDetailBiblioInfo(nBiblioIndex,
+                    nRet = this.WeiXinServer.GetDetailBiblioInfo(searchCmd,nBiblioIndex,
                         out strBiblioInfo,
                         out strError);
                     if (nRet == -1)
@@ -169,7 +185,7 @@ namespace dp2ConsoleToWeiXin
             if (strCommand == dp2CommandUtility.C_Command_Binding)
             {
                 // 设置当前命令
-                this.WeiXinServer.CurrentCmdName = strCommand;
+                this.CurrentCmdName = strCommand;
 
                 if (strParam == "")
                 {
@@ -178,7 +194,7 @@ namespace dp2ConsoleToWeiXin
                 }
 
                 // 看看上一次输入过用户名的没有？如果已存在用户名，那么这次输入的就是密码
-                BindingCommand bindingCmd = (BindingCommand)this.WeiXinServer.CmdContiner.GetCommand(strCommand);
+                BindingCommand bindingCmd = (BindingCommand)this.CmdContiner.GetCommand(strCommand);
 
                 string readerBarcode = strParam;
                 int nTempIndex = strParam.IndexOf('/');
@@ -202,9 +218,12 @@ namespace dp2ConsoleToWeiXin
                     }
                 }
 
+
+                string strReaderBarcode = "";
                 nRet = this.WeiXinServer.Binding(bindingCmd.ReaderBarcode,
                     bindingCmd.Password,
                     this.WeiXinId,
+                    out strReaderBarcode,
                     out strError);
                 if (nRet == -1 || nRet == 0)
                 {
@@ -215,6 +234,9 @@ namespace dp2ConsoleToWeiXin
                     // 把用户名与密码清掉，以便再绑其它账号
                     bindingCmd.ReaderBarcode = "";
                     bindingCmd.Password = "";
+
+                    // 设到当前读者变量上
+                    this.ReaderBarcode = strReaderBarcode;
                     Console.WriteLine("绑定成功!");
                 }
 
@@ -226,15 +248,32 @@ namespace dp2ConsoleToWeiXin
             if (strCommand == dp2CommandUtility.C_Command_Unbinding)
             {
                 // 设置当前命令
-                this.WeiXinServer.CurrentCmdName = "";
+                this.CurrentCmdName = "";
 
-                nRet = this.WeiXinServer.Unbinding(this.WeiXinId, out strError);
+                // 先检查有无绑定读者账号
+                nRet = this.CheckIsBinding(this.WeiXinId, out strError);
+                if (nRet == -1)
+                {
+                    Console.WriteLine(strError);
+                    return false;
+                }
+                // 尚未绑定读者账号
+                if (nRet == 0)
+                {
+                    Console.WriteLine("您尚未绑定读者账号，不需要解除绑定。");
+                    return false;
+                }
+
+                // 解除绑定
+                nRet = this.WeiXinServer.Unbinding(this.ReaderBarcode, out strError);
                 if (nRet == -1 || nRet == 0)
                 {
                     Console.WriteLine(strError);
                     return false;
                 }
 
+                // 置空当前读者变量上
+                this.ReaderBarcode = "";
                 Console.WriteLine("解除绑定成功。");
                 return false;
 
@@ -242,14 +281,28 @@ namespace dp2ConsoleToWeiXin
 
             //=========================
             // 个人信息
-            if (strCommand == dp2CommandUtility.C_Command_MyInfo)
+            if (strCommand == dp2CommandUtility.C_Command_MyInfo)            
             {
                 // 置空当前命令
-                this.WeiXinServer.CurrentCmdName = "";
+                this.CurrentCmdName = "";
 
+                // 先检查有无绑定读者账号
+                nRet = this.CheckIsBinding(this.WeiXinId, out strError);
+                if (nRet == -1)
+                {
+                    Console.WriteLine(strError);
+                    return false;
+                }
+                // 尚未绑定读者账号
+                if (nRet == 0)
+                {
+                    Console.WriteLine("尚未绑定读者账号，请先调Binding命令先绑定");
+                    return false;
+                }
 
+                // 获取读者信息
                 string strMyInfo = "";
-                nRet = this.WeiXinServer.GetMyInfo(this.WeiXinId, out strMyInfo,
+                nRet = this.WeiXinServer.GetMyInfo1(this.ReaderBarcode, out strMyInfo,
                     out strError);
                 if (nRet == -1)
                 {
@@ -257,12 +310,6 @@ namespace dp2ConsoleToWeiXin
                     return false;
                 }
 
-                // 尚未绑定读者账号
-                if (nRet == 0)
-                {
-                    Console.WriteLine("尚未绑定读者账号，请先调Binding命令先绑定");
-                    return false;
-                }
 
                 // 显示个人信息
                 Console.WriteLine(strMyInfo);
@@ -275,11 +322,10 @@ namespace dp2ConsoleToWeiXin
             if (strCommand == dp2CommandUtility.C_Command_BorrowInfo)
             {
                 // 置空当前命令
-                this.WeiXinServer.CurrentCmdName = "";
+                this.CurrentCmdName = "";
 
-                string strBorrowInfo = "";
-                nRet = this.WeiXinServer.GetBorrowInfo(this.WeiXinId, out strBorrowInfo,
-                    out strError);
+                // 先检查是否绑定读者账号
+                nRet = this.CheckIsBinding(this.WeiXinId, out strError);
                 if (nRet == -1)
                 {
                     Console.WriteLine(strError);
@@ -289,6 +335,15 @@ namespace dp2ConsoleToWeiXin
                 if (nRet == 0)
                 {
                     Console.WriteLine("尚未绑定读者账号，请先调Binding命令先绑定");
+                    return false;
+                }
+
+                string strBorrowInfo = "";
+                nRet = this.WeiXinServer.GetBorrowInfo1(this.ReaderBarcode, out strBorrowInfo,
+                    out strError);
+                if (nRet == -1)
+                {
+                    Console.WriteLine(strError);
                     return false;
                 }
 
@@ -302,19 +357,27 @@ namespace dp2ConsoleToWeiXin
             if (strCommand == dp2CommandUtility.C_Command_Renew)
             {
                 // 设置当前命令
-                this.WeiXinServer.CurrentCmdName = strCommand;
+                this.CurrentCmdName = strCommand;
 
-                if (strParam == "")
+                // 先检查是否绑定读者账号
+                nRet = this.CheckIsBinding(this.WeiXinId, out strError);
+                if (nRet == -1)
                 {
-                    Console.WriteLine("请输入续借图书编号或者册条码号");
+                    Console.WriteLine(strError);
                     return false;
                 }
-                
-                // view 查看已借图片
-                if (strParam == "view")
+                // 尚未绑定读者账号
+                if (nRet == 0)
+                {
+                    Console.WriteLine("尚未绑定读者账号，请先调Binding命令先绑定");
+                    return false;
+                }
+
+                // 查看已借图书
+                if (strParam == "" || strParam=="view")
                 {
                     string strBorrowInfo = "";
-                    nRet = this.WeiXinServer.GetBorrowInfo(this.WeiXinId, out strBorrowInfo,
+                    nRet = this.WeiXinServer.GetBorrowInfo1(this.ReaderBarcode, out strBorrowInfo,
                         out strError);
                     if (nRet == -1)
                     {
@@ -330,24 +393,20 @@ namespace dp2ConsoleToWeiXin
 
                     // 显示个人信息
                     Console.WriteLine(strBorrowInfo);
+                    Console.WriteLine("请输入续借图书编号或者册条码号");
                     return false;
                 }
 
 
                 // 认作册条码
                 BorrowInfo borrowInfo = null;
-                nRet = this.WeiXinServer.Renew(this.WeiXinId,
+                nRet = this.WeiXinServer.Renew1(this.ReaderBarcode,
                     strParam,
                     out borrowInfo,
                     out strError);
                 if (nRet == -1)
                 {
                     Console.WriteLine(strError);
-                    return false;
-                }
-                if (nRet == 0)
-                {
-                    Console.WriteLine("尚未绑定读者账号，请先调Binding命令先绑定");
                     return false;
                 }
 
@@ -368,6 +427,41 @@ namespace dp2ConsoleToWeiXin
 
         }
 
+        /// <summary>
+        /// 检查微信用户是否绑定读者账号
+        /// </summary>
+        /// <param name="strWeiXinId"></param>
+        /// <param name="strXml"></param>
+        /// <param name="strError"></param>
+        /// <returns></returns>
+        private int CheckIsBinding(string strWeiXinId,  out string strError)
+        {
+            strError = "";
+
+            if (String.IsNullOrEmpty(this.ReaderBarcode) == true)
+            {
+                // 根据openid检索绑定的读者
+                string strRecPath = "";
+                string strXml = "";
+                long lRet = this.WeiXinServer.SearchReaderByWeiXinId(strWeiXinId, out strRecPath,
+                    out strXml,
+                    out strError);
+                if (lRet == -1)
+                {
+                    return -1;
+                }
+                // 未绑定
+                if (lRet == 0)
+                {
+                    return 0;
+                }
+
+                XmlDocument dom = new XmlDocument();
+                dom.LoadXml(strXml);
+                this.ReaderBarcode = DomUtil.GetNodeText(dom.DocumentElement.SelectSingleNode("barcode"));
+            }
+            return 1;
+        }
 
 
         // Implement IDisposable.

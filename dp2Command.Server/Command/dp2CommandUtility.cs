@@ -20,6 +20,8 @@ namespace dp2Command.Server
         // 检索每页显示记录数
         public const int C_ViewCount_OnePage = 50;
 
+        public const String C_WeiXinIdPrefix = "weixinid:";
+
         /// <summary>
         /// 校验字符串是否是命令
         /// </summary>
