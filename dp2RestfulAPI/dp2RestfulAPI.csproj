@@ -4,16 +4,15 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{AA0ADD05-854B-43F9-8C57-9A8768C7A564}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <ProjectGuid>{1B74D69A-530F-4275-845B-8CA6D1463BDD}</ProjectGuid>
+    <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>dp2CommandConsole</RootNamespace>
-    <AssemblyName>dp2CommandConsole</AssemblyName>
+    <RootNamespace>dp2RestfulAPI</RootNamespace>
+    <AssemblyName>dp2RestfulAPI</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -23,7 +22,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -34,6 +32,9 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.ServiceModel" />
+    <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -41,33 +42,22 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Instance.cs" />
-    <Compile Include="Program.cs" />
+    <Compile Include="CookieAwareWebClient.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="DataStructure.cs" />
+    <Compile Include="LibraryChannel.cs" />
+    <Compile Include="LibraryChannelPool.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\DigitalPlatform.IO\DigitalPlatform.IO.csproj">
-      <Project>{441cb814-af78-4503-91ef-dce5f3269502}</Project>
-      <Name>DigitalPlatform.IO</Name>
-    </ProjectReference>
     <ProjectReference Include="..\DigitalPlatform.Text\DigitalPlatform.Text.csproj">
       <Project>{26f96cc3-a4a9-4bc4-a10a-bc7e25581ff6}</Project>
       <Name>DigitalPlatform.Text</Name>
     </ProjectReference>
-    <ProjectReference Include="..\DigitalPlatform.Xml\DigitalPlatform.Xml.csproj">
-      <Project>{e6489e89-1349-4ee7-a00b-ac96b9912587}</Project>
-      <Name>DigitalPlatform.Xml</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\dp2Command.Server\dp2Command.Server.csproj">
-      <Project>{a77b8a4a-3ae8-4bd7-b09a-bf8d92fe802d}</Project>
-      <Name>dp2Command.Server</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\dp2RestfulAPI\dp2RestfulAPI.csproj">
-      <Project>{1b74d69a-530f-4275-845b-8ca6d1463bdd}</Project>
-      <Name>dp2RestfulAPI</Name>
+    <ProjectReference Include="..\DigitalPlatform\DigitalPlatform.csproj">
+      <Project>{bdd43275-eaa0-4670-8ba3-0db5cd7598dd}</Project>
+      <Name>DigitalPlatform</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

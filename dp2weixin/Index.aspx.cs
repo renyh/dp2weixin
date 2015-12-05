@@ -7,7 +7,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Senparc.Weixin.MP;
 using Senparc.Weixin.MP.Entities.Request;
-using dp2Command.Server.dp2RestfulApi;
+using dp2RestfulAPI;
 namespace dp2weixin
 {
     public partial class Index : System.Web.UI.Page

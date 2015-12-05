@@ -4,7 +4,7 @@ using System.Linq;
 using System.Web;
 using System.Net;
 
-namespace dp2Command.Server
+namespace dp2RestfulAPI
 {
     /// <summary>
     /// 从WebClient继承

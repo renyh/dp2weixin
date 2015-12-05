@@ -2,7 +2,7 @@
 using DigitalPlatform.IO;
 using DigitalPlatform.Text;
 using DigitalPlatform.Xml;
-using dp2Command.Server.dp2RestfulApi;
+using dp2RestfulAPI;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

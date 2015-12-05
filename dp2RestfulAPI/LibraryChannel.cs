@@ -16,9 +16,8 @@ using DigitalPlatform;
 using System.Runtime.Serialization.Json;
 using System.Web;
 using DigitalPlatform.Text;
-using dp2Command.Server;
 
-namespace dp2Command.Server.dp2RestfulApi
+namespace dp2RestfulAPI
 {
     /// <summary>
     /// 通讯通道
