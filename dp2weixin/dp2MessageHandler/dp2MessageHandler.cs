@@ -536,6 +536,20 @@ namespace dp2weixin
             return this.CreateTextResponseMessage(strMessage);
         }
 
+        private IResponseMessageBase CreateTextResponseMessage(string strText,bool bHasPath)
+        {
+            if (bHasPath==true && this.IsDisplayPath == true)
+            {
+                strText = "命令路径:[" + this.CurrentMessageContext.CurrentCmdPath + "]\n"
+                    + "------------\n"
+                    + strText;
+            }
+
+            var responseMessage = CreateResponseMessage<ResponseMessageText>();
+            responseMessage.Content = strText;
+            return responseMessage;
+        }
+
         /// <summary>
         /// 创建文本回复消息
         /// </summary>
@@ -543,16 +557,7 @@ namespace dp2weixin
         /// <returns></returns>
         private IResponseMessageBase CreateTextResponseMessage(string strText)
         {
-            if (this.IsDisplayPath == true)
-            {
-                strText = "命令路径:[" +this.CurrentMessageContext.CurrentCmdPath+"]\n"
-                    +"------------\n"
-                    + strText;
-            }
-
-            var responseMessage = CreateResponseMessage<ResponseMessageText>();
-            responseMessage.Content = strText;
-            return responseMessage;
+            return this.CreateTextResponseMessage(strText, true);
         }
 
         /// <summary>
