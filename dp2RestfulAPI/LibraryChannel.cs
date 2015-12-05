@@ -24,6 +24,9 @@ namespace dp2RestfulAPI
     /// </summary>
     public class LibraryChannel
     {
+        // 检索限制最大命中数常量
+        public const int C_Search_MaxCount = 500;
+
         /// <summary>
         /// dp2Library 服务器的 URL
         /// </summary>
@@ -569,7 +572,7 @@ namespace dp2RestfulAPI
                 SearchBiblioRequest request = new SearchBiblioRequest();
                 request.strQueryWord = strWord;
                 request.strBiblioDbNames = ""; //??
-                request.nPerMax = -1;
+                request.nPerMax = C_Search_MaxCount; //500;// -1;
                 request.strLang = "zh";
                 request.strSearchStyle = "";// "desc";
                 request.strOutputStyle = "id,cols";

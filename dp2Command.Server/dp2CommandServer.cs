@@ -155,7 +155,6 @@ namespace dp2Command.Server
                 }
 
                 // 将检索结果信息保存到检索命令中
-               //searchCommand searchCmd = (SearchCommand)this.CmdContiner.GetCommand(dp2CommandUtility.C_Command_Search);
                 searchCmd.BiblioResultPathList = totalResultList;
                 searchCmd.ResultNextStart = 0;
                 searchCmd.IsCanNextPage = true;
@@ -223,6 +222,103 @@ namespace dp2Command.Server
                 this.ChannelPool.ReturnChannel(channel);
             }
             return 0;
+        }
+
+        /// <summary>
+        /// 根据操作时间检索
+        /// </summary>
+        /// <param name="strWord"></param>
+        /// <param name="searchCmd"></param>
+        /// <param name="strFirstPage"></param>
+        /// <param name="strError"></param>
+        /// <returns></returns>
+        public long SearchBiblioByOpertime(string strWord,
+            SearchCommand searchCmd,
+            out string strFirstPage,
+            out string strError)
+        {
+            strFirstPage = "";
+            strError = "";
+
+            // 判断检索词
+            strWord = strWord.Trim();
+            if (String.IsNullOrEmpty(strWord))
+            {
+                strError = "检索词不能为空。";
+                return -1;
+            }
+
+            long lTotoalCount = 0;
+            // 从池中征用通道
+            LibraryChannel channel = this.ChannelPool.GetChannel(this.dp2Url, this.dp2UserName);
+            channel.Password = this.dp2Password;
+            try
+            {
+                // -1失败
+                // 0 未命令
+                long lRet = channel.SearchBiblio(strWord,
+                    out strError);
+                if (lRet == -1 || lRet == 0)
+                {
+                    return lRet;
+                }
+
+                // 取出命中记录列表
+                lTotoalCount = lRet;
+
+                List<string> totalResultList = new List<string>();
+                long lStart = 0;
+                // 当前总共取的多少记录
+                long lCurTotalCount = 0;
+
+            REDO:
+                List<string> resultPathList = null;
+                long lCount = -1;
+                lRet = channel.GetBiblioSearchResult(lStart,
+                    lCount,
+                     out resultPathList,
+                     out strError);
+                if (lRet == -1)
+                    return -1;
+
+                // 加到结果集中
+                totalResultList.AddRange(resultPathList);
+
+                // 检查记录是否获取完成，没取完继续取
+                lCurTotalCount += lRet;
+                if (lCurTotalCount < lTotoalCount)
+                {
+                    lStart = lCurTotalCount;
+                    goto REDO;
+                }
+
+
+                // 检查一下，取出来的记录数，是否与返回的命中数量一致
+                if (lTotoalCount != totalResultList.Count)
+                {
+                    strError = "内部错误，不可能结果集数量不一致";
+                    return -1;
+                }
+
+                // 将检索结果信息保存到检索命令中
+                searchCmd.BiblioResultPathList = totalResultList;
+                searchCmd.ResultNextStart = 0;
+                searchCmd.IsCanNextPage = true;
+
+                // 获得第一页检索结果
+                bool bRet = searchCmd.GetNextPage(out strFirstPage, out strError);
+                if (bRet == false)
+                {
+                    return -1;
+                }
+            }
+            finally
+            {
+                // 归还通道到池
+                this.ChannelPool.ReturnChannel(channel);
+            }
+
+            return lTotoalCount;
         }
 
         #endregion
