@@ -23,10 +23,10 @@ namespace dp2BatchForWeiXin
             InitializeComponent();
 
             // 从config中取出url,weixin代理账号
-            string strDp2Url = "http://dp2003.com/dp2library/rest/";
-            string strDp2UserName = "weixin";
+            string strDp2Url = "http://localhost/dp2library/xe/rest";//"http://dp2003.com/dp2library/rest/";
+            string strDp2UserName = "supervisor";//"weixin";
             // todo 密码改为加密格式
-            string strDp2Password = "111111";
+            string strDp2Password = "";// "111111";
 
             // 错误日志目录
             string strLogDir = "C:\\dp2BatchForWeiXin_log";
@@ -50,7 +50,8 @@ namespace dp2BatchForWeiXin
             SearchCommand searchCmd = (SearchCommand)this.CmdContiner.GetCommand(dp2CommandUtility.C_Command_Search);
             string strFirstPage = "";
             string strError = "";
-            long nRet = this._cmdServer.SearchBiblioByOpertime("2015-11-14 09:12:13Z",//2003-04-01 00:00:00Z~2015-12-30 00:00:00Z", 
+            long nRet = this._cmdServer.SearchBiblioByPublishtime("1995-04-01 00:00:00Z~2015-10-30 00:00:00Z",//"1900-04-01 00:00:00Z~2015-10-30 00:00:00Z",//2003-04-01 00:00:00Z~2015-12-30 00:00:00Z", 
+                
                 searchCmd,
                 out strFirstPage,
                 out strError);

@@ -25,7 +25,7 @@ namespace dp2RestfulAPI
     public class LibraryChannel
     {
         // 检索限制最大命中数常量
-        public const int C_Search_MaxCount = 500;
+        public const int C_Search_MaxCount = 100;
 
         /// <summary>
         /// dp2Library 服务器的 URL
@@ -559,6 +559,7 @@ namespace dp2RestfulAPI
         /// <returns></returns>
         public long SearchBiblio(
             string strWord,
+            string strFromStyle,
             out string strError)
         {
             strError = "";
@@ -576,7 +577,7 @@ namespace dp2RestfulAPI
                 request.strLang = "zh";
                 request.strSearchStyle = "";// "desc";
                 request.strOutputStyle = "id,cols";
-                request.strFromStyle = "";
+                request.strFromStyle = strFromStyle;
                 request.strMatchStyle = "middle";
                 request.strResultSetName = "weixin-biblio";
 

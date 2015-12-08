@@ -111,6 +111,7 @@ namespace dp2Command.Server
                 // -1失败
                 // 0 未命令
                 long lRet = channel.SearchBiblio(strWord,
+                    "",//全部途径
                     out strError);
                 if (lRet == -1 || lRet == 0)
                 {
@@ -232,7 +233,7 @@ namespace dp2Command.Server
         /// <param name="strFirstPage"></param>
         /// <param name="strError"></param>
         /// <returns></returns>
-        public long SearchBiblioByOpertime(string strWord,
+        public long SearchBiblioByPublishtime(string strWord,
             SearchCommand searchCmd,
             out string strFirstPage,
             out string strError)
@@ -257,6 +258,7 @@ namespace dp2Command.Server
                 // -1失败
                 // 0 未命令
                 long lRet = channel.SearchBiblio(strWord,
+                    "publishtime,_time,_freetime",
                     out strError);
                 if (lRet == -1 || lRet == 0)
                 {
