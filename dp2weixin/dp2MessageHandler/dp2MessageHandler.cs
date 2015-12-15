@@ -29,7 +29,7 @@ namespace dp2weixin
     public partial class dp2MessageHandler : MessageHandler<dp2MessageContext>
     {
         // 由外面传进来的全局对象
-        public dp2CommandServer WeiXinServer = null;
+        public dp2CommandServer CmdServer = null;
 
         // 公众号程序目录，用于获取新书推荐与公告配置文件的路径
         public string dp2WeiXinAppDir = "";
@@ -42,14 +42,14 @@ namespace dp2weixin
         /// </summary>
         /// <param name="inputStream"></param>
         /// <param name="maxRecordCount"></param>
-        public dp2MessageHandler(dp2CommandServer weiXinServer,Stream inputStream, PostModel postModel, int maxRecordCount = 0)
+        public dp2MessageHandler(dp2CommandServer cmdServer,Stream inputStream, PostModel postModel, int maxRecordCount = 0)
             : base(inputStream, postModel, maxRecordCount)
         {
             //这里设置仅用于测试，实际开发可以在外部更全局的地方设置，
             //比如MessageHandler<MessageContext>.GlobalWeixinContext.ExpireMinutes = 3。
             WeixinContext.ExpireMinutes = 3;
 
-            this.WeiXinServer = weiXinServer;
+            this.CmdServer = cmdServer;
         }
 
         /// <summary>
@@ -255,7 +255,7 @@ namespace dp2weixin
                 if (nBiblioIndex >= 1)
                 {
                     string strBiblioInfo = "";
-                    lRet = this.WeiXinServer.GetDetailBiblioInfo(searchCmd, nBiblioIndex,
+                    lRet = this.CmdServer.GetDetailBiblioInfo(searchCmd, nBiblioIndex,
                         out strBiblioInfo,
                         out strError);
                     if (lRet == -1)
@@ -270,7 +270,7 @@ namespace dp2weixin
 
             // 检索
             string strFirstPage = "";
-            lRet = this.WeiXinServer.SearchBiblio(strParam, searchCmd,
+            lRet = this.CmdServer.SearchBiblio(strParam, searchCmd,
                 out strFirstPage,
                 out strError);
             if (lRet == -1)
@@ -328,7 +328,7 @@ namespace dp2weixin
 
             string strReaderBarcode = "";
             string strError = "";
-            long lRet = this.WeiXinServer.Binding(bindingCmd.ReaderBarcode,
+            long lRet = this.CmdServer.Binding(bindingCmd.ReaderBarcode,
                 bindingCmd.Password,
                 this.CurrentMessageContext.UserName, //.WeiXinId
                 out strReaderBarcode,
@@ -372,7 +372,7 @@ namespace dp2weixin
             }
 
             // 解除绑定
-            lRet = this.WeiXinServer.Unbinding(this.CurrentMessageContext.ReaderBarcode, out strError);
+            lRet = this.CmdServer.Unbinding(this.CurrentMessageContext.ReaderBarcode, out strError);
             if (lRet == -1 || lRet == 0)
             {
                 return this.CreateTextResponseMessage(strError);
@@ -409,7 +409,7 @@ namespace dp2weixin
 
             // 获取读者信息
             string strMyInfo = "";
-            lRet = this.WeiXinServer.GetMyInfo1(this.CurrentMessageContext.ReaderBarcode, out strMyInfo,
+            lRet = this.CmdServer.GetMyInfo1(this.CurrentMessageContext.ReaderBarcode, out strMyInfo,
                 out strError);
             if (lRet == -1 || lRet==0)
             {
@@ -445,7 +445,7 @@ namespace dp2weixin
             }
 
             string strBorrowInfo = "";
-            lRet = this.WeiXinServer.GetBorrowInfo1(this.CurrentMessageContext.ReaderBarcode, out strBorrowInfo,
+            lRet = this.CmdServer.GetBorrowInfo1(this.CurrentMessageContext.ReaderBarcode, out strBorrowInfo,
                 out strError);
             if (lRet == -1)
             {
@@ -485,7 +485,7 @@ namespace dp2weixin
             if (strParam == "" || strParam == "view")
             {
                 string strBorrowInfo = "";
-                lRet = this.WeiXinServer.GetBorrowInfo1(this.CurrentMessageContext.ReaderBarcode, out strBorrowInfo,
+                lRet = this.CmdServer.GetBorrowInfo1(this.CurrentMessageContext.ReaderBarcode, out strBorrowInfo,
                     out strError);
                 if (lRet == -1 || lRet==0)
                 {
@@ -501,7 +501,7 @@ namespace dp2weixin
 
             // 目前只认作册条码，todo支持序与
             BorrowInfo borrowInfo = null;
-            lRet = this.WeiXinServer.Renew1(this.CurrentMessageContext.ReaderBarcode,
+            lRet = this.CmdServer.Renew1(this.CurrentMessageContext.ReaderBarcode,
                 strParam,
                 out borrowInfo,
                 out strError);
@@ -576,7 +576,7 @@ namespace dp2weixin
                 // 根据openid检索绑定的读者
                 string strRecPath = "";
                 string strXml = "";
-                long lRet = this.WeiXinServer.SearchReaderByWeiXinId(this.CurrentMessageContext.UserName, out strRecPath,
+                long lRet = this.CmdServer.SearchReaderByWeiXinId(this.CurrentMessageContext.UserName, out strRecPath,
                     out strXml,
                     out strError);
                 if (lRet == -1)
@@ -629,7 +629,7 @@ namespace dp2weixin
                 {
                     Title = DomUtil.GetNodeText(node.SelectSingleNode("Title")),
                     Description = DomUtil.GetNodeText(node.SelectSingleNode("Description")),
-                    PicUrl = this.WeiXinServer.dp2WeiXinUrl + DomUtil.GetNodeText(node.SelectSingleNode("PicUrl")),
+                    PicUrl = this.CmdServer.dp2WeiXinUrl + DomUtil.GetNodeText(node.SelectSingleNode("PicUrl")),
                     Url = DomUtil.GetNodeText(node.SelectSingleNode("Url"))
                 });
             }
@@ -667,7 +667,7 @@ namespace dp2weixin
                 article.Description = DomUtil.GetNodeText(node.SelectSingleNode("Description"));
                 string picUrl = DomUtil.GetNodeText(node.SelectSingleNode("PicUrl"));
                 if (String.IsNullOrEmpty(picUrl) == false)
-                    article.PicUrl = this.WeiXinServer.dp2WeiXinUrl + picUrl;
+                    article.PicUrl = this.CmdServer.dp2WeiXinUrl + picUrl;
                 article.Url = DomUtil.GetNodeText(node.SelectSingleNode("Url"));
                 responseMessage.Articles.Add(article);
             }

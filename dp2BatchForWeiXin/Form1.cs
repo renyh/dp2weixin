@@ -14,7 +14,7 @@ namespace dp2BatchForWeiXin
 {
     public partial class Form1 : Form
     {
-        public dp2CommandServer _cmdServer = null;
+        //public dp2CommandServer _cmdServer = null;
         // 命令集合
         public CommandContainer CmdContiner = null;
 
@@ -23,10 +23,10 @@ namespace dp2BatchForWeiXin
             InitializeComponent();
 
             // 从config中取出url,weixin代理账号
-            string strDp2Url = "http://localhost/dp2library/xe/rest";//"http://dp2003.com/dp2library/rest/";
-            string strDp2UserName = "supervisor";//"weixin";
+            string strDp2Url = "http://dp2003.com/dp2library/rest/";//http://localhost/dp2library/xe/rest";//"
+            string strDp2UserName = "weixin";// "supervisor";//
             // todo 密码改为加密格式
-            string strDp2Password = "";// "111111";
+            string strDp2Password = "111111";// "";//
 
             // 错误日志目录
             string strLogDir = "C:\\dp2BatchForWeiXin_log";
@@ -34,8 +34,8 @@ namespace dp2BatchForWeiXin
 
             string strDp2WeiXinUrl = "http://dp2003.com/dp2weixin";
 
-            // 创建一个全局的微信服务类
-            this._cmdServer = new dp2CommandServer(strDp2Url,
+            // 将命令服务类改为单一实例方式 20151215
+            dp2CommandServer.Instance.Init(strDp2Url,
                 strDp2UserName,
                 strDp2Password,
                 strDp2WeiXinUrl,
@@ -50,7 +50,7 @@ namespace dp2BatchForWeiXin
             SearchCommand searchCmd = (SearchCommand)this.CmdContiner.GetCommand(dp2CommandUtility.C_Command_Search);
             string strFirstPage = "";
             string strError = "";
-            long nRet = this._cmdServer.SearchBiblioByPublishtime("1995-04-01 00:00:00Z~2015-10-30 00:00:00Z",//"1900-04-01 00:00:00Z~2015-10-30 00:00:00Z",//2003-04-01 00:00:00Z~2015-12-30 00:00:00Z", 
+            long nRet = dp2CommandServer.Instance.SearchBiblioByPublishtime("1900-04-01 00:00:00Z~2015-10-30 00:00:00Z",//"1900-04-01 00:00:00Z~2015-10-30 00:00:00Z",//2003-04-01 00:00:00Z~2015-12-30 00:00:00Z", 
                 
                 searchCmd,
                 out strFirstPage,

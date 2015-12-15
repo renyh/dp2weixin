@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 
@@ -16,6 +17,31 @@ namespace dp2Command.Server
 {
     public class dp2CommandServer
     {
+        //=================
+        // 设为单一实例
+        static dp2CommandServer _instance;
+        private dp2CommandServer()
+        {
+            Thread.Sleep(100); //假设多线程的时候因某种原因阻塞100毫秒
+        }
+        static object myObject = new object();
+        static public dp2CommandServer Instance
+        {
+            get
+            {
+                lock (myObject)
+                {
+                    if (null == _instance)
+                    {
+                        _instance = new dp2CommandServer();
+                    }
+                    return _instance;
+                }
+            }
+        }
+        //===========
+
+
         // dp2服务器地址与代理账号
         public string dp2Url = "";//"http://dp2003.com/dp2library/rest/"; //"http://localhost:8001/dp2library/rest/";//
         public string dp2UserName = "";//"weixin";
@@ -38,7 +64,7 @@ namespace dp2Command.Server
         /// <param name="strDp2Password"></param>
         /// <param name="strDp2WeiXinUrl"></param>
         /// <param name="strDp2WeiXinLogDir"></param>
-        public dp2CommandServer(string strDp2Url,
+        public void  Init(string strDp2Url,
             string strDp2UserName,
             string strDp2Password,
             string strDp2WeiXinUrl,

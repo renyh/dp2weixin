@@ -13,7 +13,6 @@ namespace dp2weixin
 {
     public class Global : System.Web.HttpApplication
     {
-        public static dp2CommandServer GlobalWeiXinServer = null;
 
         protected void Application_Start(object sender, EventArgs e)
         {        
@@ -29,8 +28,8 @@ namespace dp2weixin
 
             string strDp2WeiXinUrl = "http://dp2003.com/dp2weixin";
             
-            // 创建一个全局的微信服务类
-            GlobalWeiXinServer = new dp2CommandServer(strDp2Url,
+            // 初始化命令服务类
+            dp2CommandServer.Instance.Init(strDp2Url,
                 strDp2UserName,
                 strDp2Password,
                 strDp2WeiXinUrl,
