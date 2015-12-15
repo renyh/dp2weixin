@@ -57,8 +57,10 @@
 
 <div class="container">
 
-@using (Html.BeginForm("Login", "Account", FormMethod.Post, new { @class = "form-signin" }))
+@using (Html.BeginForm("Login", "Account", new {ReturnUrl = ViewBag.ReturnUrl},FormMethod.Post, new { @class = "form-signin" }))
 {
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(true)
         <h2 class="form-signin-heading">请&nbsp;登&nbsp;录</h2>
         
         <label for="inputEmail" class="sr-only">用户名</label>

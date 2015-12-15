@@ -32,9 +32,9 @@
                     <li>@Html.ActionLink("出纳窗", "Main", "Charging")</li>
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
+                    @Html.Partial("_LoginPartial")
                     <li>@Html.ActionLink("关于", "About", "Home")</li>
                     <li>@Html.ActionLink("联系我们", "Contact", "Home")</li>
-                    <li>@Html.ActionLink("登录", "Login", "Account")</li>
                 </ul>
             </div><!--/.nav-collapse -->
         </div>

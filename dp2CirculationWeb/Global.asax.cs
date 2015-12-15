@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ilovelibrary.Server;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -22,6 +23,11 @@ namespace dp2CirculationWeb
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
             RouteConfig.RegisterRoutes(RouteTable.Routes);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
+
+            // 初始化全局服务器
+            string dp2LibraryUrl = "http://dp2003.com/dp2library/rest/";
+            string logDir = "C:\\ilovelibrary_log";
+            ilovelibraryServer.Instance.Init(dp2LibraryUrl, logDir);
         }
     }
 }

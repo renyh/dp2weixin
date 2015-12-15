@@ -25,6 +25,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dp2RestfulAPI", "dp2Restful
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dp2CirculationWeb", "dp2CirculationWeb\dp2CirculationWeb.csproj", "{7C31EA17-404D-4CE6-8401-71808BEB5883}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ilovelibrary.Server", "ilovelibrary.Server\ilovelibrary.Server.csproj", "{159E08AE-5C0F-4DA7-9F73-AF07791247CE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -146,6 +148,15 @@ Global
 		{7C31EA17-404D-4CE6-8401-71808BEB5883}.Test|Any CPU.ActiveCfg = Release|Any CPU
 		{7C31EA17-404D-4CE6-8401-71808BEB5883}.Test|Any CPU.Build.0 = Release|Any CPU
 		{7C31EA17-404D-4CE6-8401-71808BEB5883}.Test|x86.ActiveCfg = Release|Any CPU
+		{159E08AE-5C0F-4DA7-9F73-AF07791247CE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{159E08AE-5C0F-4DA7-9F73-AF07791247CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{159E08AE-5C0F-4DA7-9F73-AF07791247CE}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{159E08AE-5C0F-4DA7-9F73-AF07791247CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{159E08AE-5C0F-4DA7-9F73-AF07791247CE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{159E08AE-5C0F-4DA7-9F73-AF07791247CE}.Release|x86.ActiveCfg = Release|Any CPU
+		{159E08AE-5C0F-4DA7-9F73-AF07791247CE}.Test|Any CPU.ActiveCfg = Release|Any CPU
+		{159E08AE-5C0F-4DA7-9F73-AF07791247CE}.Test|Any CPU.Build.0 = Release|Any CPU
+		{159E08AE-5C0F-4DA7-9F73-AF07791247CE}.Test|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

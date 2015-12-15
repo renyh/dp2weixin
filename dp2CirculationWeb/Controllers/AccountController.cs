@@ -1,4 +1,5 @@
 ﻿using dp2CirculationWeb.Models;
+using ilovelibrary.Server;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,40 +10,60 @@ namespace dp2CirculationWeb.Controllers
 {
     public class AccountController : Controller
     {
-        public ActionResult Login()
+        public ActionResult Login(string returnUrl)
         {
+            ViewBag.ReturnUrl = returnUrl;
             return View();
         }
-
+        
 
         [HttpPost]
-        public ActionResult Login(LoginModel model)
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public ActionResult Login(LoginModel model, string returnUrl)
         {
-            bool bRet = true;
-            // 进行登录校验
-
-            //进行登录
-
-            // 存在Session中
-            Session["AcountName"] = model.UserName;
-
+            string strError = "";
+            string strRight = "";
+            //登录dp2library服务器
+            bool bRet = ilovelibraryServer.Instance.Login(model.UserName,
+                model.Password,
+                out strRight,
+                out strError);
             if (bRet == true)
             {
-                return RedirectToAction("Index", "Home");
+                // 存在Session中
+                SessionInfo sessionInfo = new SessionInfo();
+                sessionInfo.UserName = model.UserName;
+                sessionInfo.Password = model.Password;
+                sessionInfo.Rights = strRight;
+                Session[SessionInfo.C_Session_sessioninfo] = sessionInfo;
+
+                // 返回来源界面
+                if (String.IsNullOrEmpty(returnUrl) == false)
+                {
+                    return Redirect(returnUrl);
+                }
+                else
+                {
+                    return RedirectToAction("Index", "Home");
+                }
+
             }
 
 
             // 如果我们进行到这一步时某个地方出错，则重新显示表单
-            ModelState.AddModelError("", "提供的用户名或密码不正确。");
+            ModelState.AddModelError("", strError);//"提供的用户名或密码不正确。");
+
+            // 继续跟上登录成功返回的url
+            ViewBag.ReturnUrl = returnUrl;
             return View(model);
         }
 
-        //
-        // POST: /Account/LogOff
-        [HttpPost]
-        public ActionResult LogOff()
+
+        public ActionResult Logout()
         {
-            //WebSecurity.Logout();
+            // 将session置空
+            Session[SessionInfo.C_Session_sessioninfo] = null;
 
             return RedirectToAction("Index", "Home");
         }

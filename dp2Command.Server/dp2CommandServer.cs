@@ -22,7 +22,7 @@ namespace dp2Command.Server
         static dp2CommandServer _instance;
         private dp2CommandServer()
         {
-            Thread.Sleep(100); //假设多线程的时候因某种原因阻塞100毫秒
+            //Thread.Sleep(100); //假设多线程的时候因某种原因阻塞100毫秒
         }
         static object myObject = new object();
         static public dp2CommandServer Instance

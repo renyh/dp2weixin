@@ -796,35 +796,27 @@ namespace dp2RestfulAPI
         /// </returns>
         public LoginResponse Login(string strUserName,
             string strPassword,
-            string strParameters,
-            out string strError)
+            string strParameters)
         {
-            strError = "";
-            try
-            {
-                CookieAwareWebClient client = new CookieAwareWebClient(Cookies);
-                client.Headers["Content-type"] = "application/json; charset=utf-8";
 
-                LoginRequest request = new LoginRequest();
-                request.strUserName = strUserName;
-                request.strPassword = strPassword;
-                request.strParameters = "";// "location=#web,index=-1,type=reader,simulate=yes"; 
-                byte[] baData = Encoding.UTF8.GetBytes(Serialize(request));
+            CookieAwareWebClient client = new CookieAwareWebClient(Cookies);
+            client.Headers["Content-type"] = "application/json; charset=utf-8";
 
-                byte[] result = client.UploadData(this.GetRestfulApiUrl("login"),
-                    "POST",
-                    baData);
+            LoginRequest request = new LoginRequest();
+            request.strUserName = strUserName;
+            request.strPassword = strPassword;
+            request.strParameters = "";// "location=#web,index=-1,type=reader,simulate=yes"; 
+            byte[] baData = Encoding.UTF8.GetBytes(Serialize(request));
 
-                string strResult = Encoding.UTF8.GetString(result);
+            byte[] result = client.UploadData(this.GetRestfulApiUrl("login"),
+                "POST",
+                baData);
 
-                LoginResponse response = Deserialize<LoginResponse>(strResult);
-                return response;
-            }
-            catch (Exception ex)
-            {
-                strError = ExceptionUtil.GetAutoText(ex);
-                return null;
-            }
+            string strResult = Encoding.UTF8.GetString(result);
+
+            LoginResponse response = Deserialize<LoginResponse>(strResult);
+            return response;
+
         }
 
 
@@ -892,8 +884,7 @@ namespace dp2RestfulAPI
 
                 LoginResponse lRet = this.Login(ea.UserName,
                     ea.Password,
-                    ea.Parameters,
-                    out strError);
+                    ea.Parameters);
                 if (lRet.LoginResult.Value == -1 || lRet.LoginResult.Value == 0)
                 {
                     if (String.IsNullOrEmpty(strMessage) == false)

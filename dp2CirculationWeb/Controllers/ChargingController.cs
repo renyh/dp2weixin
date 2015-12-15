@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ilovelibrary.Server;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -13,16 +14,12 @@ namespace dp2CirculationWeb.Controllers
 
         public ActionResult Main()
         {
-            /*
-            string accountName = "";
-            if (Session["AcountName"] != null)
-                accountName = (string)Session["AcountName"];
-
-            if (accountName == "")
+            // 如果示登录，先去登录界面
+            if (Session[SessionInfo.C_Session_sessioninfo] == null)
             {
-                return this.RedirectToAction("Login", "Account");
+                return this.RedirectToAction("Login", "Account", new { ReturnUrl = "~/Charging/Main"});
             }
-            */
+            
             return View();
         }
 

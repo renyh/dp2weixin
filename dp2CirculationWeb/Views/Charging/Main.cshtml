@@ -26,7 +26,7 @@
                     <h3 class="panel-title" id="operPanelTitle">您现在是借书输入框</h3>
                 </div>
                 <div class="panel-body">
-                    <form class="form-horizontal" role="form">
+                    <div class="form-horizontal" role="form">
                         <div class="form-group form-inline" id="divReaderBarcode">
                             <label id="lblReaderBarcode" class="col-sm-3 control-label">读者证条码号</label>
                             <input type="text" class="form-control col-sm-8" id="txtReaderBarcode" placeholder="读者证条码号">
@@ -37,7 +37,7 @@
                             <input type="text" class="form-control  col-sm-8" id="txtItemBarcode" placeholder="册条码号">
                             &nbsp;<button type="submit" class="btn btn-primary" id="btnDo">&nbsp;借&nbsp;&nbsp;</button>
                         </div>
-                    </form>
+                    </div>
                 </div>
 
             </div>
@@ -71,7 +71,7 @@
                 <div class="panel-heading">
                     <h3 class="panel-title">读者信息</h3>
                 </div>
-                <div class="panel-body">
+                <div class="panel-body" id="panelReader">
                     <table class="table">
                         <tr>
                             <td style="background-color:#EEEEEE">读者证条码号</td>
@@ -161,7 +161,33 @@
 
 @section Scripts {
     <script>
+        //$(document).ready调用是jQuery推迟函数执行的一项标准技术，
+        //它直到浏览器加载并处理了文档的所有HTML元素之后才会执行。
+        $(document).ready(function () {            
+                // 设焦点在读者证条码上
+                $("#txtReaderBarcode").focus();
 
+            // 给装载按钮绑事件
+                $("#btnLoad").click(loadReader);
+
+            // 给读者证条码输入框加回车事件
+            $('#txtReaderBarcode').bind('keypress', function (event) {
+                if (event.keyCode == "13") {
+                    loadReader();                    
+                }
+            });
+
+            // 给执行按钮绑事件
+            $("#btnDo").click(doString);
+
+            // 当册条码绑回车事件
+            $('#txtItemBarcode').bind('keypress', function (event) {
+                if (event.keyCode == "13") {
+                    doString();
+                }
+            });
+            
+        });
 
 
         $("#borrow").click(function () {
@@ -200,7 +226,22 @@
 
             $("#divReaderBarcode").show();
             //alert("renew");
-        });
+        });       
+
+        //加载读者信息
+        function loadReader() {
+            $("#panelReader").html("<h3>从服务器获得读者信息。</h3>");
+            // 焦点换到item上
+            $("#txtItemBarcode").focus();
+
+        }
+
+        // 执行借还续借操作
+        function doString() {
+            
+            alert("未完成");
+
+        }
 
     </script>
 }

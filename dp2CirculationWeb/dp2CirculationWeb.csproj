@@ -256,6 +256,10 @@
       <Project>{1b74d69a-530f-4275-845b-8ca6d1463bdd}</Project>
       <Name>dp2RestfulAPI</Name>
     </ProjectReference>
+    <ProjectReference Include="..\ilovelibrary.Server\ilovelibrary.Server.csproj">
+      <Project>{159e08ae-5c0f-4da7-9f73-af07791247ce}</Project>
+      <Name>ilovelibrary.Server</Name>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
