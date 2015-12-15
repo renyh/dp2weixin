@@ -23,6 +23,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dp2BatchForWeiXin", "dp2Bat
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dp2RestfulAPI", "dp2RestfulAPI\dp2RestfulAPI.csproj", "{1B74D69A-530F-4275-845B-8CA6D1463BDD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dp2CirculationWeb", "dp2CirculationWeb\dp2CirculationWeb.csproj", "{7C31EA17-404D-4CE6-8401-71808BEB5883}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -135,6 +137,15 @@ Global
 		{1B74D69A-530F-4275-845B-8CA6D1463BDD}.Test|Any CPU.ActiveCfg = Release|Any CPU
 		{1B74D69A-530F-4275-845B-8CA6D1463BDD}.Test|Any CPU.Build.0 = Release|Any CPU
 		{1B74D69A-530F-4275-845B-8CA6D1463BDD}.Test|x86.ActiveCfg = Release|Any CPU
+		{7C31EA17-404D-4CE6-8401-71808BEB5883}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7C31EA17-404D-4CE6-8401-71808BEB5883}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7C31EA17-404D-4CE6-8401-71808BEB5883}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{7C31EA17-404D-4CE6-8401-71808BEB5883}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7C31EA17-404D-4CE6-8401-71808BEB5883}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7C31EA17-404D-4CE6-8401-71808BEB5883}.Release|x86.ActiveCfg = Release|Any CPU
+		{7C31EA17-404D-4CE6-8401-71808BEB5883}.Test|Any CPU.ActiveCfg = Release|Any CPU
+		{7C31EA17-404D-4CE6-8401-71808BEB5883}.Test|Any CPU.Build.0 = Release|Any CPU
+		{7C31EA17-404D-4CE6-8401-71808BEB5883}.Test|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

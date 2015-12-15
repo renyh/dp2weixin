@@ -1,0 +1,206 @@
+﻿@{
+    ViewBag.Title = "出纳窗";
+}
+
+<hgroup class="page-header">
+    <h2>@ViewBag.Title</h2>
+</hgroup>
+
+
+
+<div class="container" style="background-color:#ffffff">
+    <div class="row">
+        <div class="col-md-6" style="background-color:#ffffff">
+            <!-- Provides extra visual weight and identifies the primary action in a set of buttons -->
+            <button type="button" class="btn btn-primary btn-lg " id="borrow">借</button>
+            &nbsp;&nbsp;
+            <!-- Indicates a successful or positive action -->
+            <button type="button" class="btn btn-success btn-lg" id="return">还</button>
+            &nbsp;&nbsp;
+            <!-- Contextual button for informational alert messages -->
+            <button type="button" class="btn btn-info btn-lg" id="renew">续借</button>
+            <br />
+            <br />
+            <div class="panel panel-primary" id="operPanel">
+                <div class="panel-heading">
+                    <h3 class="panel-title" id="operPanelTitle">您现在是借书输入框</h3>
+                </div>
+                <div class="panel-body">
+                    <form class="form-horizontal" role="form">
+                        <div class="form-group form-inline" id="divReaderBarcode">
+                            <label id="lblReaderBarcode" class="col-sm-3 control-label">读者证条码号</label>
+                            <input type="text" class="form-control col-sm-8" id="txtReaderBarcode" placeholder="读者证条码号">
+                            &nbsp;<button type="button" class="btn btn-primary" id="btnLoad">装载</button>
+                        </div>
+                        <div class="form-group  form-inline" id="divItemBarcode">
+                            <label id="lblItemBarcode" class="col-sm-3 control-label">册条码号</label>
+                            <input type="text" class="form-control  col-sm-8" id="txtItemBarcode" placeholder="册条码号">
+                            &nbsp;<button type="submit" class="btn btn-primary" id="btnDo">&nbsp;借&nbsp;&nbsp;</button>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+
+            <div class="panel panel-default">
+ 
+                <!-- Table -->
+                <table class="table">
+                    <thead>
+                        <tr style="background-color:#DDDDDD">
+                        <th class="col-lg-1">状态</th>
+                        <th>操作</th>
+                        <th>信息</th></tr>
+                    </thead>
+                    <tr>
+                    <td><font color="green"><span class="glyphicon glyphicon-ok"></span></font></td>
+                    <td>装载读者信息</td>
+                    <td>成功装载</td>
+                    </tr>
+                    <tr class="danger">
+                    <td><font color="red"><span class="glyphicon glyphicon-exclamation-sign "></span></font></td>
+                    <td>R001借C001</td>
+                    <td>删条码号不存在!</td></tr>
+                </table>
+            </div>
+        </div>
+
+
+        <div class="col-md-6" style="background-color:#ffffff">
+            <div class="panel panel-warning">
+                <div class="panel-heading">
+                    <h3 class="panel-title">读者信息</h3>
+                </div>
+                <div class="panel-body">
+                    <table class="table">
+                        <tr>
+                            <td style="background-color:#EEEEEE">读者证条码号</td>
+                            <td> R001</td>
+                            <td style="background-color:#EEEEEE">证状态</td>
+                            <td>&nbsp;</td>
+                        </tr>
+                        <tr>
+                            <td style="background-color:#EEEEEE">
+                                读者类别
+                            </td>
+                            <td> 本科生</td>
+                            <td style="background-color:#EEEEEE">失效日期</td>
+                            <td>2016/1/1 </td>
+                        </tr>
+                        <tr>
+                            <td style="background-color:#EEEEEE">姓名</td>
+                            <td> jane</td>
+                            <td style="background-color:#EEEEEE">单位</td>
+                            <td>&nbsp;</td>
+                        </tr>
+
+                    </table>
+                </div>
+
+                <div class="panel panel-warning">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">借阅信息</h3>
+                    </div>
+                    <div class="panel-body">
+                        <table class="table  table-striped">
+                            <thead></thead>
+                            <tr>                                         
+                                <th>册条码号</th>
+                                <th>摘要</th>
+                                <th>价格</th>
+                                <th>续借次</th>
+                                <th>借阅日期</th>
+                                <th>期限</th>
+                                <th>操作者</th>
+                                <th>应还日期</th>
+                            </tr>
+                            <tr>
+                                <td>C001</td>
+                                <td>中国机读目录格式使用手册 / 北京图书馆《中国机读目录格式使用手册》编委会. -- ISBN 7-80039-990-7 : ￥58.00</td>
+                                <td>20.00</td>
+                                <td>2次</td>
+                                <td>2015/12/15</td>
+                                <td>31天</td>
+                                <td>supervisor</td>
+                                <td>2016/1/15</td>
+                            </tr>
+
+                        </table>
+                    </div>
+                </div>
+
+                <div class="panel panel-warning">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">预约请求</h3>
+                    </div>
+                    <div class="panel-body">
+                        <table class="table  table-striped">
+                            <tr>
+                                <td></td>
+                                <td> </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    
+                                </td>
+                                <td> </td>
+                            </tr>
+                            <tr><td></td><td> </td></tr>
+
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+
+
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    <script>
+
+
+
+        $("#borrow").click(function () {
+            // 更改pannel
+            $("#operPanel").removeClass("panel-success panel-info panel-primary").addClass("panel-primary");
+            $("#btnLoad").removeClass("btn-success btn-info btn-primary").addClass("btn-primary");
+            $("#btnDo").removeClass("btn-success btn-info btn-primary").addClass("btn-primary");
+            $("#divReaderBarcode").show();
+
+            $("#operPanelTitle").text("您现在是借书输入框");
+
+            //alert("borrow");
+        });
+
+        $("#return").click(function () {
+
+            // 更改pannel
+            $("#operPanel").removeClass("panel-success panel-info panel-primary").addClass("panel-success");
+            $("#btnLoad").removeClass("btn-success btn-info btn-primary").addClass("btn-success");
+            $("#btnDo").removeClass("btn-success btn-info btn-primary").addClass("btn-success");
+
+            $("#divReaderBarcode").hide();
+
+            $("#operPanelTitle").text("您现在是还书输入框");
+            //alert("return");
+        });
+
+        $("#renew").click(function () {
+
+            // 更改pannel
+            $("#operPanel").removeClass("panel-success panel-info panel-primary").addClass("panel-info");
+            $("#btnLoad").removeClass("btn-success btn-info btn-primary").addClass("btn-info");
+            $("#btnDo").removeClass("btn-success btn-info btn-primary").addClass("btn-info");
+
+            $("#operPanelTitle").text("您现在是续借输入框");
+
+            $("#divReaderBarcode").show();
+            //alert("renew");
+        });
+
+    </script>
+}
