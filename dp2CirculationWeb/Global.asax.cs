@@ -7,6 +7,7 @@ using System.Web.Http;
 using System.Web.Mvc;
 using System.Web.Optimization;
 using System.Web.Routing;
+using System.Web.SessionState;
 
 namespace dp2CirculationWeb
 {
@@ -28,6 +29,13 @@ namespace dp2CirculationWeb
             string dp2LibraryUrl = "http://dp2003.com/dp2library/rest/";
             string logDir = "C:\\ilovelibrary_log";
             ilovelibraryServer.Instance.Init(dp2LibraryUrl, logDir);
+        }
+
+
+        public override void Init()
+        {
+            this.PostAuthenticateRequest += (sender, e) => HttpContext.Current.SetSessionStateBehavior(SessionStateBehavior.Required);
+            base.Init();
         }
     }
 }

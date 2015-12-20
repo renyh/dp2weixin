@@ -10,6 +10,10 @@
     <link href="~/Content/bootstrap.min.css" rel="stylesheet">
     <link href="~/Content/sticky-footer-navbar.css" rel="stylesheet">
     @RenderSection("style", required: false)
+    @Scripts.Render("~/bundles/jquery")
+    <script src="~/Scripts/bootstrap.js"></script>
+    <script src="~/Scripts/knockout-2.2.0.js"></script>
+    @RenderSection("scripts", required: false)
 </head>
 
 <body>
@@ -56,8 +60,6 @@
     </footer>
 
 
-    @Scripts.Render("~/bundles/jquery")
-    <script src="~/Scripts/bootstrap.js"></script>
-    @RenderSection("scripts", required: false)
+
 </body>
 </html>

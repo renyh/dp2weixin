@@ -9,16 +9,26 @@ namespace dp2CirculationWeb.Controllers
 {
     public class ChargingController : Controller
     {
+        public ActionResult Test()
+        {
+            return View();
+        }
+
+
         //
         // GET: /Charging/
 
         public ActionResult Main()
         {
-            // 如果示登录，先去登录界面
+            
+            // 如果未登录，先去登录界面
             if (Session[SessionInfo.C_Session_sessioninfo] == null)
             {
                 return this.RedirectToAction("Login", "Account", new { ReturnUrl = "~/Charging/Main"});
             }
+             
+
+
             
             return View();
         }
