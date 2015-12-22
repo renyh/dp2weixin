@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 
-namespace dp2RestfulAPI
+namespace DigitalPlatform.LibraryRestClient
 {
     /// <summary>
     /// 通道池

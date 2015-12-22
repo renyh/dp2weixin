@@ -9,7 +9,7 @@ using System.Net;
 using DigitalPlatform.IO;
 using dp2Command.Server;
 using dp2Command.Server.Command;
-using dp2RestfulAPI;
+using DigitalPlatform.LibraryRestClient;
 using System.Xml;
 using DigitalPlatform.Xml;
 

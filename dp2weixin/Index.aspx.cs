@@ -7,7 +7,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Senparc.Weixin.MP;
 using Senparc.Weixin.MP.Entities.Request;
-using dp2RestfulAPI;
+using DigitalPlatform.LibraryRestClient;
 using dp2Command.Server;
 namespace dp2weixin
 {

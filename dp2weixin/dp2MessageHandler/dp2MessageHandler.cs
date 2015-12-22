@@ -18,7 +18,7 @@ using DigitalPlatform;
 using DigitalPlatform.Text;
 using dp2Command.Server;
 using dp2Command.Server.Command;
-using dp2RestfulAPI;
+using DigitalPlatform.LibraryRestClient;
 
 namespace dp2weixin
 {

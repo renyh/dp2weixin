@@ -4,7 +4,7 @@ using System.Linq;
 using System.Web;
 using System.Net;
 
-namespace dp2RestfulAPI
+namespace DigitalPlatform.LibraryRestClient
 {
     /// <summary>
     /// 从WebClient继承

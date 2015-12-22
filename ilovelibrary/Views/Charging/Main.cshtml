@@ -122,10 +122,10 @@
 
         // 删除命令
         function removeCmd(item) {
-            alert("remove-" + item.id);
+            //alert("remove-" + item.id);
             sendAjaxRequest("DELETE", function () {
 
-                alert("back");
+                //alert("back");
                 for (var i = 0; i < cmdModel.commands().length; i++) {
                     if (cmdModel.commands()[i].id == item.id) {
                         cmdModel.commands.remove(cmdModel.commands()[i]);
