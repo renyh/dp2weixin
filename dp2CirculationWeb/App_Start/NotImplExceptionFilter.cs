@@ -7,7 +7,7 @@ using System.Web;
 using System.Web.Http;
 using System.Web.Http.Filters;
 
-namespace dp2CirculationWeb.App_Start
+namespace ilovelibrary
 {
     public class NotImplExceptionFilter : ExceptionFilterAttribute  
     {

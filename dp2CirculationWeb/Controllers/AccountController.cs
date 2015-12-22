@@ -1,4 +1,4 @@
-﻿using dp2CirculationWeb.Models;
+﻿using ilovelibrary.Models;
 using ilovelibrary.Server;
 using System;
 using System.Collections.Generic;
@@ -6,7 +6,7 @@ using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 
-namespace dp2CirculationWeb.Controllers
+namespace ilovelibrary.Controllers
 {
     public class AccountController : Controller
     {

@@ -1,5 +1,4 @@
-﻿using dp2CirculationWeb.App_Start;
-using ilovelibrary.Server;
+﻿using ilovelibrary.Server;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +7,7 @@ using System.Net.Http;
 using System.Web;
 using System.Web.Http;
 
-namespace dp2CirculationWeb.Controllers
+namespace ilovelibrary.Controllers
 {
     public class PatronController : ApiController
     {

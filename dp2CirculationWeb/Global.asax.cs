@@ -1,5 +1,4 @@
-﻿using dp2CirculationWeb.App_Start;
-using ilovelibrary.Server;
+﻿using ilovelibrary.Server;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +9,7 @@ using System.Web.Optimization;
 using System.Web.Routing;
 using System.Web.SessionState;
 
-namespace dp2CirculationWeb
+namespace ilovelibrary
 {
     // 注意: 有关启用 IIS6 或 IIS7 经典模式的说明，
     // 请访问 http://go.microsoft.com/?LinkId=9394801

@@ -23,7 +23,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dp2BatchForWeiXin", "dp2Bat
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dp2RestfulAPI", "dp2RestfulAPI\dp2RestfulAPI.csproj", "{1B74D69A-530F-4275-845B-8CA6D1463BDD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dp2CirculationWeb", "dp2CirculationWeb\dp2CirculationWeb.csproj", "{7C31EA17-404D-4CE6-8401-71808BEB5883}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ilovelibrary", "dp2CirculationWeb\ilovelibrary.csproj", "{7C31EA17-404D-4CE6-8401-71808BEB5883}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ilovelibrary.Server", "ilovelibrary.Server\ilovelibrary.Server.csproj", "{159E08AE-5C0F-4DA7-9F73-AF07791247CE}"
 EndProject
