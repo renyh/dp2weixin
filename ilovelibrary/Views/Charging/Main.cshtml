@@ -107,12 +107,17 @@
 
         // 执行命令
         function addCmd() {
+            //alert("addCmd0-" + cmdModel.editor.type() + "~" + cmdModel.editor.readerBarcode() + "~" + cmdModel.editor.itemBarcode());
+
             sendAjaxRequest("POST", function (newItem) {
+                //alert("addCmd1");
                 cmdModel.commands.push(newItem);
+                //alert("addCmd2");
 
                 // 刷新借阅信息
                 loadBorrowInfo();
 
+                //alert("addCmd3");
             }, "/api/command", {
                 type: cmdModel.editor.type,
                 readerBarcode: cmdModel.editor.readerBarcode,
@@ -209,6 +214,8 @@
             // 当册条码绑回车事件
             $('#txtItemBarcode').bind('keypress', function (event) {
                 if (event.keyCode == "13") {
+                    cmdModel.editor.itemBarcode($('#txtItemBarcode').val());
+
                     addCmd();
                 }
             });
