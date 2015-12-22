@@ -25,17 +25,13 @@ namespace dp2CirculationWeb.Controllers
             string strError = "";
             string strRight = "";
             //登录dp2library服务器
-            bool bRet = ilovelibraryServer.Instance.Login(model.UserName,
+            SessionInfo sessionInfo = ilovelibraryServer.Instance.Login(model.UserName,
                 model.Password,
                 out strRight,
                 out strError);
-            if (bRet == true)
+            if (sessionInfo != null)
             {
                 // 存在Session中
-                SessionInfo sessionInfo = new SessionInfo();
-                sessionInfo.UserName = model.UserName;
-                sessionInfo.Password = model.Password;
-                sessionInfo.Rights = strRight;
                 Session[SessionInfo.C_Session_sessioninfo] = sessionInfo;
 
                 // 返回来源界面

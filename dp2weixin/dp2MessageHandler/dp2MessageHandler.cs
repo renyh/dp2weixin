@@ -501,7 +501,7 @@ namespace dp2weixin
 
             // 目前只认作册条码，todo支持序与
             BorrowInfo borrowInfo = null;
-            lRet = this.CmdServer.Renew1(this.CurrentMessageContext.ReaderBarcode,
+            lRet = this.CmdServer.Renew(this.CurrentMessageContext.ReaderBarcode,
                 strParam,
                 out borrowInfo,
                 out strError);

@@ -613,7 +613,7 @@ namespace dp2Command.Server
         /// </summary>
         /// <param name="strItemBarcode">册条码号</param>
         /// <returns></returns>
-        public int Renew1(string strReaderBarcode, string strItemBarcode, out BorrowInfo borrowInfo, out string strError)
+        public int Renew(string strReaderBarcode, string strItemBarcode, out BorrowInfo borrowInfo, out string strError)
         {
             borrowInfo = null;
             strError = "";
@@ -647,7 +647,8 @@ namespace dp2Command.Server
             channel.Password = this.dp2Password;
             try
             {
-                long lRet = channel.Renew(strReaderBarcode,
+                long lRet = channel.Borrow(true,
+                    strReaderBarcode,
                     strItemBarcode,
                     out borrowInfo,
                     out strError);

@@ -1,4 +1,5 @@
-﻿using ilovelibrary.Server;
+﻿using dp2CirculationWeb.App_Start;
+using ilovelibrary.Server;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,16 +17,17 @@ namespace dp2CirculationWeb.Controllers
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
+        [NotImplExceptionFilter]
         public Patron GetPatron(string id)
         {
             if (HttpContext.Current.Session[SessionInfo.C_Session_sessioninfo] == null)
             {
-                throw new Exception("尚未登录");
+                throw new Exception("尚未登录!");
             }
             SessionInfo sessionInfo = (SessionInfo)HttpContext.Current.Session[SessionInfo.C_Session_sessioninfo];
             Patron patron = ilovelibraryServer.Instance.GetPatronInfo(sessionInfo, id);
-
             return patron;
+
         }
 
         /// <summary>

@@ -1,4 +1,5 @@
-﻿using ilovelibrary.Server;
+﻿using dp2CirculationWeb.App_Start;
+using ilovelibrary.Server;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,9 +17,18 @@ namespace dp2CirculationWeb
 
     public class MvcApplication : System.Web.HttpApplication
     {
+
+        static void ConfigureApi(HttpConfiguration config)
+        {
+            config.Filters.Add(new NotImplExceptionFilter());
+        } 
+
         protected void Application_Start()
         {
             AreaRegistration.RegisterAllAreas();
+
+            //注册异常过滤
+            //ConfigureApi(GlobalConfiguration.Configuration);
 
             WebApiConfig.Register(GlobalConfiguration.Configuration);
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
@@ -26,7 +36,7 @@ namespace dp2CirculationWeb
             BundleConfig.RegisterBundles(BundleTable.Bundles);
 
             // 初始化全局服务器
-            string dp2LibraryUrl = "http://dp2003.com/dp2library/rest/";
+            string dp2LibraryUrl = "http://localhost/dp2library/xe/rest";//"http://dp2003.com/dp2library/rest/";
             string logDir = "C:\\ilovelibrary_log";
             ilovelibraryServer.Instance.Init(dp2LibraryUrl, logDir);
         }

@@ -198,6 +198,10 @@ namespace dp2RestfulAPI
         public string strOutputUserName { get; set; }
         [DataMember]
         public string strRights { get; set; }
+
+        [DataMember]
+        public string strLibraryCode { get; set; }
+        
     }
 
     // Logout()
@@ -683,10 +687,10 @@ namespace dp2RestfulAPI
                     string strItemBarcode,
                     string strConfirmItemRecPath,
                     bool bForce,
-     * 
+
                     string[] saBorrowedItemBarcode,
                     string strStyle,
-     * 
+     
                     string strItemFormatList,
                     out string[] item_records,
                     string strReaderFormatList,
@@ -745,8 +749,6 @@ namespace dp2RestfulAPI
         public string strOutputReaderBarcode { get; set; }
     }
 
-
-
     [DataContract(Namespace = "http://dp2003.com/dp2library/")]
     public class BorrowInfo
     {
@@ -761,6 +763,123 @@ namespace dp2RestfulAPI
 
     }
 
+
+    //=======================
+    /*
+            LibraryServerResult Return(
+                    string strAction,
+                    string strReaderBarcode,
+                    string strItemBarcode,
+                    string strComfirmItemRecPath,
+     * 
+                    bool bForce,
+                    string strStyle,
+                    string strItemFormatList,
+                    out string[] item_records,
+     * 
+                    string strReaderFormatList,
+                    out string[] reader_records,
+                    string strBiblioFormatList,
+                    out string[] biblio_records,
+                    out string[] aDupPath,
+                    out string strOutputReaderBarcode,
+                    out ReturnInfo return_info);
+    */
+
+
+    [DataContract]
+    public class ReturnRequest
+    {
+        [DataMember]
+        public string strAction { get; set; }
+        [DataMember]
+        public string strReaderBarcode { get; set; }
+        [DataMember]
+        public string strItemBarcode { get; set; }
+        [DataMember]
+        public string strConfirmItemRecPath { get; set; }
+        
+        //======
+        [DataMember]
+        public bool bForce { get; set; }
+        [DataMember]
+        public string strStyle { get; set; }
+        public string strItemFormatList { get; set; }
+        public string strReaderFormatList { get; set; }
+        public string strBiblioFormatList { get; set; }
+    }
+
+
+    [DataContract]
+    public class ReturnResponse
+    {
+        [DataMember]
+        public LibraryServerResult ReturnResult { get; set; }
+
+        [DataMember]
+        public string[] item_records { get; set; }
+        [DataMember]
+        public string[] reader_records { get; set; }
+
+        [DataMember]
+        public string[] biblio_records { get; set; }
+
+        [DataMember]
+        public ReturnInfo return_info { get; set; }
+
+        [DataMember]
+        public string[] aDupPath { get; set; }
+
+        [DataMember]
+        public string strOutputReaderBarcode { get; set; }
+    }
+
+    // 还书成功后的信息
+    [DataContract(Namespace = "http://dp2003.com/dp2library/")]
+    public class ReturnInfo
+    {
+        // 借阅日期/时间
+        [DataMember]
+        public string BorrowTime = "";    // RFC1123格式，GMT时间
+
+        // 应还日期/时间
+        [DataMember]
+        public string LatestReturnTime = "";    // RFC1123格式，GMT时间
+
+        // 原借书期限。例如“20day”
+        [DataMember]
+        public string Period = "";
+
+        // 当前为续借的第几次？0表示初次借阅
+        [DataMember]
+        public long BorrowCount = 0;
+
+        // 违约金描述字符串。XML格式
+        [DataMember]
+        public string OverdueString = "";
+
+        // 借书操作者
+        [DataMember]
+        public string BorrowOperator = "";
+
+        // 还书操作者
+        [DataMember]
+        public string ReturnOperator = "";
+
+        // 2008/5/9
+        /// <summary>
+        /// 所还的册的图书类型
+        /// </summary>
+        [DataMember]
+        public string BookType = "";
+
+        // 2008/5/9
+        /// <summary>
+        /// 所还的册的馆藏地点
+        /// </summary>
+        [DataMember]
+        public string Location = "";
+    }
     /*
             string[] paths,
             string strBrowseInfoStyle,

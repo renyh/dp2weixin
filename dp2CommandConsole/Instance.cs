@@ -389,7 +389,7 @@ namespace dp2ConsoleToWeiXin
 
             // 认作册条码
             BorrowInfo borrowInfo = null;
-            lRet = dp2CommandServer.Instance.Renew1(this.ReaderBarcode,
+            lRet = dp2CommandServer.Instance.Renew(this.ReaderBarcode,
                 strParam,
                 out borrowInfo,
                 out strError);

@@ -461,7 +461,7 @@ namespace dp2RestfulAPI
 
 
         /// <summary>
-        /// 续借
+        /// 借/续借
         /// </summary>
         /// <param name="strReaderBarcode">读者证条码号</param>
         /// <param name="strItemBarcode">册条码</param>
@@ -471,7 +471,7 @@ namespace dp2RestfulAPI
         /// <para>-1:   出错</para>
         /// <para>0:    操作成功</para>/// 
         /// </returns>
-        public int Renew(
+        public int Borrow(bool bRenew,
             string strReaderBarcode,
             string strItemBarcode,
             out BorrowInfo borrow_info,
@@ -505,7 +505,7 @@ namespace dp2RestfulAPI
                 /// <param name="borrow_info">返回 BorrowInfo 结构对象，里面是一些关于借阅的详细信息</param>
                 /// <param name="strError">返回出错信息</param>
                 BorrowRequest request = new BorrowRequest();
-                request.bRenew = true;
+                request.bRenew = bRenew;
                 request.strReaderBarcode = strReaderBarcode;
                 request.strItemBarcode = strItemBarcode;
                 request.strConfirmItemRecPath = "";
@@ -547,6 +547,97 @@ namespace dp2RestfulAPI
             }
         }
 
+        ///还书
+        /// <returns>
+        /// <para>-1:   出错</para>
+        /// <para>0:    操作成功</para>
+        /// <para>1:    操作成功，并且有值得操作人员留意的情况。提示信息在 strError 中</para>
+        /// </returns>
+        public int Return(string strItemBarcode,
+            out ReturnInfo return_info,
+            out string strError)
+        {
+            return_info = null;
+            strError = "";
+
+        REDO:
+            try
+            {
+                CookieAwareWebClient client = new CookieAwareWebClient(this.Cookies);
+                client.Headers["Content-type"] = "application/json; charset=utf-8";
+
+
+                // 还书
+                // return:
+                //      -1  出错
+                //      0   正常
+                //      1   有超期情况
+                /// <summary>
+                /// 还书或声明丢失
+                /// </summary>
+                /// <param name="stop">Stop 对象</param>
+                /// <param name="strAction">动作参数。为 return lost 之一</param>
+                /// <param name="strReaderBarcode">读者证条码号，或读者身份证号</param>
+                /// <param name="strItemBarcode">要还回或声明丢失的册条码号</param>
+                /// <param name="strConfirmItemRecPath">用于确认册记录的路径</param>
+                
+                /// <param name="bForce">此参数目前未使用，设为 false 即可</param>
+                /// <param name="strStyle">操作风格</param>
+                /// <param name="strItemFormatList">指定在 item_records 参数中返回信息的格式列表</param>
+                /// <param name="item_records">返回册相关的信息数组</param>
+               
+                /// <param name="strReaderFormatList">指定在 reader_records 参数中返回信息的各式列表</param>
+                /// <param name="reader_records">返回读者相关的信息数组</param>
+                /// <param name="strBiblioFormatList">指定在 biblio_records 参数中返回信息的格式列表</param>
+                /// <param name="biblio_records">返回书目相关的信息数组</param>
+                /// <param name="aDupPath">如果发生条码号重复，这里返回了相关册记录的路径</param>
+                /// <param name="strOutputReaderBarcode">返回实际操作针对的读者证条码号</param>
+                /// <param name="return_info">返回 ReturnInfo 结构对象，里面是一些关于还书的详细信息</param>
+                /// <param name="strError">返回出错信息</param>
+                /// <returns>
+                /// <para>-1:   出错</para>
+                /// <para>0:    操作成功</para>
+                /// <para>1:    操作成功，并且有值得操作人员留意的情况。提示信息在 strError 中</para>
+                /// </returns>
+                ReturnRequest request = new ReturnRequest();
+                request.strAction = "return";
+                request.strReaderBarcode = "";
+                request.strItemBarcode = strItemBarcode;
+                request.strConfirmItemRecPath = "";
+                request.bForce = false;
+                request.strStyle = ""; 
+                request.strItemFormatList = "";
+                request.strReaderFormatList = "";
+                request.strBiblioFormatList = "";
+
+                byte[] baData = Encoding.UTF8.GetBytes(Serialize(request));
+                byte[] result = client.UploadData(this.GetRestfulApiUrl("Return"),
+                    "POST",
+                    baData);
+
+                string strResult = Encoding.UTF8.GetString(result);
+                ReturnResponse response = Deserialize<ReturnResponse>(strResult);
+                // 未登录的情况
+                if (response.ReturnResult.Value == -1 && response.ReturnResult.ErrorCode == ErrorCode.NotLogin)
+                {
+                    if (DoNotLogin(ref strError) == 1)
+                        goto REDO;
+                    return -1;
+                }
+                return_info = response.return_info;
+                strError = response.ReturnResult.ErrorInfo;
+                this.ErrorCode = response.ReturnResult.ErrorCode;
+                this.ClearRedoCount();
+                return (int)response.ReturnResult.Value;
+            }
+            catch (Exception ex)
+            {
+                int nRet = ConvertWebError(ex, out strError);
+                if (nRet == 0)
+                    return -1;
+                goto REDO;
+            }
+        }
 
         /// <summary>
         /// 检索书目
@@ -805,7 +896,7 @@ namespace dp2RestfulAPI
             LoginRequest request = new LoginRequest();
             request.strUserName = strUserName;
             request.strPassword = strPassword;
-            request.strParameters = "";// "location=#web,index=-1,type=reader,simulate=yes"; 
+            request.strParameters = "";// "location=#web,type=reader"; 
             byte[] baData = Encoding.UTF8.GetBytes(Serialize(request));
 
             byte[] result = client.UploadData(this.GetRestfulApiUrl("login"),

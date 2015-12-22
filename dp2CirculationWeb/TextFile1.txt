@@ -1,4 +1,34 @@
-﻿@{
+﻿    <br />
+    <!-- Page Heading/Breadcrumbs -->
+    <div class="row">
+        <div class="col-lg-12">
+            <ol class="breadcrumb">
+                <li>
+                    <a href="index.html">主页</a>
+                </li>
+                <li class="active">出纳窗</li>
+            </ol>
+        </div>
+    </div>
+//=============
+                        <tr>
+                            <td><font color="green"><span class="glyphicon glyphicon-ok"></span></font></td>
+                            <td>借书</td>
+                            <td>R001借C001</td>
+                            <td>借书成功</td>
+                            <td>2015-12-18 16:40</td>
+                        </tr>
+                    </tbody>
+                        <tr class="danger">
+                            <td><font color="red"><span class="glyphicon glyphicon-exclamation-sign "></span></font></td>
+                            <td>还书</td>
+                            <td>还C002</td>
+                            <td>还书出错：册条码不存在！</td>
+                            <td>2015-12-18 17:00</td>
+                        </tr>
+//=======================
+
+@{
     ViewBag.Title = "出纳窗";
 }
 
