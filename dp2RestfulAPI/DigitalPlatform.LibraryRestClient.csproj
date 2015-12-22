@@ -7,8 +7,8 @@
     <ProjectGuid>{1B74D69A-530F-4275-845B-8CA6D1463BDD}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>dp2RestfulAPI</RootNamespace>
-    <AssemblyName>dp2RestfulAPI</AssemblyName>
+    <RootNamespace>DigitalPlatform.LibraryRestClient</RootNamespace>
+    <AssemblyName>DigitalPlatform.LibraryRestClient</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>

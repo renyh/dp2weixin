@@ -75,9 +75,9 @@
       <Project>{bdd43275-eaa0-4670-8ba3-0db5cd7598dd}</Project>
       <Name>DigitalPlatform</Name>
     </ProjectReference>
-    <ProjectReference Include="..\dp2RestfulAPI\dp2RestfulAPI.csproj">
+    <ProjectReference Include="..\dp2RestfulAPI\DigitalPlatform.LibraryRestClient.csproj">
       <Project>{1b74d69a-530f-4275-845b-8ca6d1463bdd}</Project>
-      <Name>dp2RestfulAPI</Name>
+      <Name>DigitalPlatform.LibraryRestClient</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

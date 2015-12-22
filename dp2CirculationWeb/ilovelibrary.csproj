@@ -269,9 +269,9 @@
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\dp2RestfulAPI\dp2RestfulAPI.csproj">
+    <ProjectReference Include="..\dp2RestfulAPI\DigitalPlatform.LibraryRestClient.csproj">
       <Project>{1b74d69a-530f-4275-845b-8ca6d1463bdd}</Project>
-      <Name>dp2RestfulAPI</Name>
+      <Name>DigitalPlatform.LibraryRestClient</Name>
     </ProjectReference>
     <ProjectReference Include="..\ilovelibrary.Server\ilovelibrary.Server.csproj">
       <Project>{159e08ae-5c0f-4da7-9f73-af07791247ce}</Project>
